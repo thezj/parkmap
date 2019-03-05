@@ -1370,7 +1370,25 @@ mxUtils.getAll([bundle, STYLE_PATH + '/default.xml', defualtxmldoc], function (x
         }
     })
 
+  
+    //根据当前cell的信息觉得是否可以拖动
+    let originmovecell = mxGraph.prototype.moveCells
+    mxGraph.prototype.moveCells = function () {
+        if (arguments[0][0].id == '3') {
+            return false
+        }
+        return originmovecell.apply(this, arguments)
 
+
+    }
+
+    let originPreviewShape = mxGraphHandler.prototype.updatePreviewShape
+    mxGraphHandler.prototype.updatePreviewShape = function () {
+        if (this.cell.id == '3') {
+            return false
+        }
+        return originPreviewShape.apply(this, arguments)
+    }
 
     window.graph.refresh()
 
