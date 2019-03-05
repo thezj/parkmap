@@ -657,11 +657,11 @@ window.graphAction = {
             clickPath: this.clickPath
         }))
 
-        
+
 
         this.resetStatus()
 
-        if(copy.clickPath[0] == copy.clickPath[1]){
+        if (copy.clickPath[0] == copy.clickPath[1]) {
             return
         }
 
@@ -679,7 +679,7 @@ window.graphAction = {
             }
         })
 
-       
+
     },
     //存放道岔和区段的对应关系
     switchbelongsector: {
@@ -1264,8 +1264,29 @@ mxUtils.getAll([bundle, STYLE_PATH + '/default.xml', defualtxmldoc], function (x
     window.graph.importGraphModel(xhr[2].getDocumentElement())
 
     window.graph.setCellsSelectable(false)
-    window.graph.setCellsMovable(false)
+    // window.graph.setCellsMovable(false)
     window.graph.setCellsEditable(false)
+
+
+    //根据当前cell的信息觉得是否可以拖动
+    let originmovecell = mxGraph.prototype.moveCells
+    window.graph.moveCells = function () {
+        if (arguments[0][0].getAttribute('movable') == 'true') {
+            return originmovecell.apply(this, arguments)
+        } else {
+            return false
+        }
+    }
+
+    let originPreviewShape = mxGraphHandler.prototype.updatePreviewShape
+    mxGraphHandler.prototype.updatePreviewShape = function () {
+        console.log()
+
+        if (this.cell.getAttribute('movable') == 'true') {
+            return originPreviewShape.apply(this, arguments)
+        }
+        return false
+    }
 
 
 
@@ -1369,26 +1390,6 @@ mxUtils.getAll([bundle, STYLE_PATH + '/default.xml', defualtxmldoc], function (x
             mxLog.debug('mouseUp');
         }
     })
-
-  
-    //根据当前cell的信息觉得是否可以拖动
-    let originmovecell = mxGraph.prototype.moveCells
-    mxGraph.prototype.moveCells = function () {
-        if (arguments[0][0].id == '3') {
-            return false
-        }
-        return originmovecell.apply(this, arguments)
-
-
-    }
-
-    let originPreviewShape = mxGraphHandler.prototype.updatePreviewShape
-    mxGraphHandler.prototype.updatePreviewShape = function () {
-        if (this.cell.id == '3') {
-            return false
-        }
-        return originPreviewShape.apply(this, arguments)
-    }
 
     window.graph.refresh()
 

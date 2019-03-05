@@ -10,7 +10,9 @@
 body {
 	background: #000;
 }
-
+.graphbody{
+	user-select: none;
+}
 .covergraph {
 	display: none;
 	background: rgba(0, 0, 0, 0.5);
