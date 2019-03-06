@@ -844,8 +844,14 @@ mxGraphHandler.prototype.mouseUp = function (sender, me) {
 
 					//如果目标cell是一个股道时才能移动
 					if (this.target && this.target.getAttribute('type') && this.target.getAttribute('type') == "wc") {
-						this.target = window.graph.model.root
-						this.moveCells(this.cells, dx, dy, clone, this.target, me.getEvent());
+
+
+						//移动到股道中心位置
+						let g = new graphx()
+				
+						g.movecelltocenter(this.cells[0],this.target.getSubCell('road')[0])
+						// this.target = window.graph.model.root
+						// this.moveCells(this.cells, dx, dy, false, this.target, me.getEvent());
 					}
 
 				}

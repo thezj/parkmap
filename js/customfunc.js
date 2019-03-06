@@ -5,6 +5,9 @@
  * 
  */
 
+//原始图例
+let origintrain = null
+
 class graphx {
     constructor() {
         this.graph = window.graph
@@ -13,6 +16,44 @@ class graphx {
     //通过id获取cell
     getEquip(uid) {
         return window.parkequip[uid]
+    }
+
+    //生成一个新的train
+    generatetrain(name) {
+        let train = window.graph.importCells([origintrain]),
+            namelabel = train[0].getSubCell('serial')[0]
+        this.setLabelText(namelabel, `<div style="color:#000;">${name}</div>`)
+        train[0].setVisible(1)
+        this.graph.refresh(train[0])
+        return train[0]
+    }
+
+
+
+
+    //计算股道的中心位置
+    calculateroadcenter(cell) {
+
+        let offset = {
+                x: this.graph.view.getState(cell).origin.x,
+                y: this.graph.view.getState(cell).origin.y
+            },
+
+            x = offset.x + cell.geometry.width / 2,
+            y = offset.y + cell.geometry.height / 2
+        return {
+            x,
+            y
+        }
+
+    }
+
+    //移动cell的中心点到cell的中心的
+    movecelltocenter(s, t) {
+
+        let target = this.calculateroadcenter(t),
+            cells = this.graph.moveCells([s], target.x - (s.geometry.x + s.geometry.width / 2), target.y - (s.geometry.y + s.geometry.height / 2), false)
+        return cells[0]
     }
 
     setTurnoutStatus(uid, status, nofresh) {
@@ -1280,9 +1321,8 @@ mxUtils.getAll([bundle, STYLE_PATH + '/default.xml', defualtxmldoc], function (x
 
     let originPreviewShape = mxGraphHandler.prototype.updatePreviewShape
     mxGraphHandler.prototype.updatePreviewShape = function () {
-        console.log()
 
-        if (this.cell.getAttribute('movable') == 'true') {
+        if (this.cell && this.cell.getAttribute('movable') == 'true') {
             return originPreviewShape.apply(this, arguments)
         }
         return false
@@ -1294,10 +1334,17 @@ mxUtils.getAll([bundle, STYLE_PATH + '/default.xml', defualtxmldoc], function (x
         let cell = window.graph.getModel().cells[i]
 
 
+        //给灯加一个底圈
         if (cell.getAttribute('name') == 'light') {
             let referenceposition = cell.geometry,
                 newboundary = this.graph.insertVertex(cell.parent, null, '', referenceposition.x, referenceposition.y, 19, 19, "shape=ellipse;whiteSpace=wrap;html=1;aspect=fixed;strokeColor=#3694FF;fillColor=none;cursor=pointer;");
             window.graph.orderCells(1, [newboundary])
+        }
+
+        //隐藏train的图例
+        if (cell.getAttribute('type') == 'train') {
+            origintrain = cell
+            cell.setVisible(0)
         }
 
         //如果发现uid属性则加入全局存放
