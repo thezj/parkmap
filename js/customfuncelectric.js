@@ -48,6 +48,8 @@ class graphx {
 
     }
 
+
+
     //移动cell的中心点到cell的中心的
     movecelltocenter(s, t) {
 
@@ -55,6 +57,15 @@ class graphx {
             cells = this.graph.moveCells([s], target.x - (s.geometry.x + s.geometry.width / 2), target.y - (s.geometry.y + s.geometry.height / 2), false)
         return cells[0]
     }
+
+    //设置edge的终点
+//     getsubk([parkequip[211]]).geometry.targetPoint
+// mxPoint {x: 0, y: 117.5, equals: ƒ, clone: ƒ}
+// getsubk([parkequip[211]]).geometry.sourcePoint
+// mxPoint {x: 71, y: 183.5, equals: ƒ, clone: ƒ}
+// getsubk([parkequip[211]]).geometry.targetPoint.x = getsubk([parkequip[211]]).geometry.sourcePoint.x 
+// 71
+// graph.refresh(getsubk([parkequip[211]]))
 
     setTurnoutStatus(uid, status, nofresh) {
         let cell = this.getEquip(uid)
@@ -1256,6 +1267,17 @@ window.getNamedCell = cell => {
 
 }
 
+window.getsubk = cells => {
+    for (let x = 0; x < cells.length; x++) {
+        if (cells[x].children != null) {
+            return getsubk(cells[x].children)
+        }else if(cells[x].value && cells[x].value.attributes['k']){
+            return cells[x]
+        }
+    }
+}
+
+
 //存放全部部件细粒度到包含道岔 区段 和信号机 按钮
 window.parkequip = {}
 
@@ -1285,7 +1307,7 @@ mxResources.loadDefaultBundle = false;
 var bundle = mxResources.getDefaultBundle(RESOURCE_BASE, mxLanguage) ||
     mxResources.getSpecialBundle(RESOURCE_BASE, mxLanguage);
 
-let defualtxmldoc = 'station.xml'
+let defualtxmldoc = 'supplywire.xml'
 
 // Fixes possible asynchronous requests
 mxUtils.getAll([bundle, STYLE_PATH + '/default.xml', defualtxmldoc], function (xhr) {
@@ -1410,10 +1432,7 @@ mxUtils.getAll([bundle, STYLE_PATH + '/default.xml', defualtxmldoc], function (x
             }, 0)
 
         }
-        //处理所有edge
-        if (cell.edge && cell.target) {
-            cell.setVisible(0)
-        }
+
     }
 
 
@@ -1479,8 +1498,10 @@ mxUtils.getAll([bundle, STYLE_PATH + '/default.xml', defualtxmldoc], function (x
     window.document_load_ready()
 
     //滚动视图到中心
-
+    window.graph.zoomTo(0.5)
     window.graph.center()
+
+    window.graph.dblClick = function () {}
 
     //添加拖拽图标
 
@@ -1489,7 +1510,7 @@ mxUtils.getAll([bundle, STYLE_PATH + '/default.xml', defualtxmldoc], function (x
         console.log(window.getCellUid(this.findtargetcell))
     }
 
-    mxUtils.makeDraggable(document.querySelector('#dragicons img'), window.graph, dragcallback, document.querySelector('#dragicons img').cloneNode(), -15, -15, false, false, true);
+    // mxUtils.makeDraggable(document.querySelector('#dragicons img'), window.graph, dragcallback, document.querySelector('#dragicons img').cloneNode(), -15, -15, false, false, true);
 
 
 
