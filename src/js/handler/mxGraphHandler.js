@@ -763,15 +763,18 @@ mxGraphHandler.prototype.mouseMove = function (sender, me) {
 		var cursor = graph.getCursorForMouseEvent(me);
 
 		if (cursor == null && graph.isEnabled() && graph.isCellMovable(me.getCell())) {
-			if (graph.getModel().isEdge(me.getCell())) {
-				cursor = mxConstants.CURSOR_MOVABLE_EDGE;
-			} else {
-				cursor = mxConstants.CURSOR_MOVABLE_VERTEX;
-			}
-
 			//当鼠标移动是如果当前cell是有name属性的则显示手形
-			if (me.getCell().getAttribute('name')) {
+			if (me.getCell() && window.graphmode == 'electric') {
 				cursor = mxConstants.CURSOR_CONNECT;
+
+			} else {
+
+				if (graph.getModel().isEdge(me.getCell())) {
+					cursor = mxConstants.CURSOR_MOVABLE_EDGE;
+				} else {
+					cursor = mxConstants.CURSOR_MOVABLE_VERTEX;
+				}
+
 			}
 		}
 
@@ -848,8 +851,8 @@ mxGraphHandler.prototype.mouseUp = function (sender, me) {
 
 						//移动到股道中心位置
 						let g = new graphx()
-				
-						g.movecelltocenter(this.cells[0],this.target.getSubCell('road')[0])
+
+						g.movecelltocenter(this.cells[0], this.target.getSubCell('road')[0])
 						// this.target = window.graph.model.root
 						// this.moveCells(this.cells, dx, dy, false, this.target, me.getEvent());
 					}

@@ -135,6 +135,7 @@ class graphx {
         ay.map(ip => {
             ip.map(i => {
                 window.globalintervalcell.delete(i)
+                this.showcell(w)
             })
         })
         //红色闪烁显示：表示道岔已失去表示超过允许失去表示的规定时间（非特殊道岔，一般情况为30秒），此时道岔处于挤岔报警状态，
@@ -221,6 +222,11 @@ class graphx {
             }
         }
 
+    }
+
+    showcell(c) {
+        c.setVisible(1)
+        this.graph.refresh(c)
     }
 
     setSectorStatus(uid, status, nofresh) {
@@ -467,6 +473,9 @@ class graphx {
             window.globalintervalcell.delete(buttonla)
             window.globalintervalcell.delete(lightda)
             window.globalintervalcell.delete(light0)
+            this.showcell(buttonla)
+            this.showcell(lightda)
+            this.showcell(light0)
         }
 
         if (status.train_btn_flash) {

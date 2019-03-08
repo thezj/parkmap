@@ -4,7 +4,7 @@
  * 
  * 
  */
-
+window.graphmode = 'electric'
 //原始图例
 let origintrain = null
 
@@ -58,14 +58,89 @@ class graphx {
         return cells[0]
     }
 
+
+
+    //设置分区线闪烁
+    flashwiresector(wirename, flash) {
+        let wires = parkequip[wirename.toUpperCase()]
+        if (wires.children) {
+            wires.children.map(w => {
+                window.globalintervalcell.delete(w)
+                this.showcell(w)
+                if (flash) {
+                    window.globalintervalcell.add(w)
+                }
+            })
+        } else {
+            window.globalintervalcell.delete(wires)
+            this.showcell(wires)
+            if (flash) {
+                window.globalintervalcell.add(wires)
+            }
+        }
+    }
+
+
+
     //设置edge的终点
-//     getsubk([parkequip[211]]).geometry.targetPoint
-// mxPoint {x: 0, y: 117.5, equals: ƒ, clone: ƒ}
-// getsubk([parkequip[211]]).geometry.sourcePoint
-// mxPoint {x: 71, y: 183.5, equals: ƒ, clone: ƒ}
-// getsubk([parkequip[211]]).geometry.targetPoint.x = getsubk([parkequip[211]]).geometry.sourcePoint.x 
-// 71
-// graph.refresh(getsubk([parkequip[211]]))
+    triggerSwitch(uid, status) {
+        let switchcell = getsubk([parkequip[uid]])
+        if (window['switchopenx' + uid] === undefined) {
+            window['switchopenx' + uid] = switchcell.geometry.targetPoint.x
+            window['switchopeny' + uid] = switchcell.geometry.targetPoint.y
+            //判断switch朝向
+            let tx = switchcell.geometry.targetPoint.x,
+                ty = switchcell.geometry.targetPoint.y,
+                sx = switchcell.geometry.sourcePoint.x,
+                sy = switchcell.geometry.sourcePoint.y
+
+            if (Math.abs(ty - sy) > Math.abs(tx - sx) && ty < sy) {
+                window['switchdirection' + uid] = 'up'
+            } else if (Math.abs(ty - sy) > Math.abs(tx - sx) && ty > sy) {
+                window['switchdirection' + uid] = 'down'
+            } else if (Math.abs(ty - sy) < Math.abs(tx - sx) && tx < sx) {
+                window['switchdirection' + uid] = 'left'
+            } else if (Math.abs(ty - sy) < Math.abs(tx - sx) && tx > sx) {
+                window['switchdirection' + uid] = 'right'
+            }
+        }
+
+
+        if (status) {
+
+            switch (window['switchdirection' + uid]) {
+                case 'up':
+                    switchcell.geometry.targetPoint.x = switchcell.geometry.sourcePoint.x
+                    switchcell.geometry.targetPoint.y = window['switchopeny' + uid] - 24
+                    break;
+                case 'down':
+                    switchcell.geometry.targetPoint.x = switchcell.geometry.sourcePoint.x
+                    switchcell.geometry.targetPoint.y = window['switchopeny' + uid] + 24
+                    break;
+                case 'left':
+                    switchcell.geometry.targetPoint.y = switchcell.geometry.sourcePoint.y
+                    switchcell.geometry.targetPoint.x = window['switchopenx' + uid] - 24
+                    break;
+                case 'right':
+                    switchcell.geometry.targetPoint.y = switchcell.geometry.sourcePoint.y
+                    switchcell.geometry.targetPoint.x = window['switchopenx' + uid] + 24
+                    break;
+            }
+
+
+
+        } else {
+            switchcell.geometry.targetPoint.x = window['switchopenx' + uid]
+            switchcell.geometry.targetPoint.y = window['switchopeny' + uid]
+        }
+
+        this.graph.refresh(switchcell)
+    }
+
+    showcell(c) {
+        c.setVisible(1)
+        this.graph.refresh(c)
+    }
 
     setTurnoutStatus(uid, status, nofresh) {
         let cell = this.getEquip(uid)
@@ -1271,7 +1346,7 @@ window.getsubk = cells => {
     for (let x = 0; x < cells.length; x++) {
         if (cells[x].children != null) {
             return getsubk(cells[x].children)
-        }else if(cells[x].value && cells[x].value.attributes['k']){
+        } else if (cells[x].value && cells[x].value.attributes['k']) {
             return cells[x]
         }
     }
