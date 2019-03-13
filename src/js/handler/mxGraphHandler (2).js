@@ -361,10 +361,6 @@ mxGraphHandler.prototype.consumeMouseEvent = function (evtName, me) {
  * redirected to this handler.
  */
 mxGraphHandler.prototype.mouseDown = function (sender, me) {
-	//如果鼠标按下时当前cell不是可移动的则返回
-	if (!(this.getInitialCellForEvent(me) && this.getInitialCellForEvent(me).getAttribute('movable'))) {
-		return
-	}
 	if (!me.isConsumed() && this.isEnabled() && this.graph.isEnabled() &&
 		me.getState() != null && !mxEvent.isMultiTouchEvent(me.getEvent())) {
 		var cell = this.getInitialCellForEvent(me);
@@ -633,7 +629,6 @@ mxGraphHandler.prototype.roundLength = function (length) {
  * preview.
  */
 mxGraphHandler.prototype.mouseMove = function (sender, me) {
-
 	var graph = this.graph;
 
 	if (!me.isConsumed() && graph.isMouseDown && this.cell != null &&
@@ -664,27 +659,26 @@ mxGraphHandler.prototype.mouseMove = function (sender, me) {
 			var gridEnabled = graph.isGridEnabledEvent(me.getEvent());
 			var hideGuide = true;
 
-			//取消显示辅助线
-			// if (this.guide != null && this.useGuidesForEvent(me)) {
-			// 	delta = this.guide.move(this.bounds, new mxPoint(dx, dy), gridEnabled, clone);
-			// 	hideGuide = false;
-			// 	dx = delta.x;
-			// 	dy = delta.y;
-			// } else if (gridEnabled) {
-			// 	var trx = graph.getView().translate;
-			// 	var scale = graph.getView().scale;
+			if (this.guide != null && this.useGuidesForEvent(me)) {
+				delta = this.guide.move(this.bounds, new mxPoint(dx, dy), gridEnabled, clone);
+				hideGuide = false;
+				dx = delta.x;
+				dy = delta.y;
+			} else if (gridEnabled) {
+				var trx = graph.getView().translate;
+				var scale = graph.getView().scale;
 
-			// 	var tx = this.bounds.x - (graph.snap(this.bounds.x / scale - trx.x) + trx.x) * scale;
-			// 	var ty = this.bounds.y - (graph.snap(this.bounds.y / scale - trx.y) + trx.y) * scale;
-			// 	var v = this.snap(new mxPoint(dx, dy));
+				var tx = this.bounds.x - (graph.snap(this.bounds.x / scale - trx.x) + trx.x) * scale;
+				var ty = this.bounds.y - (graph.snap(this.bounds.y / scale - trx.y) + trx.y) * scale;
+				var v = this.snap(new mxPoint(dx, dy));
 
-			// 	dx = v.x - tx;
-			// 	dy = v.y - ty;
-			// }
+				dx = v.x - tx;
+				dy = v.y - ty;
+			}
 
-			// if (this.guide != null && hideGuide) {
-			// 	this.guide.hide();
-			// }
+			if (this.guide != null && hideGuide) {
+				this.guide.hide();
+			}
 
 			// Constrained movement if shift key is pressed
 			if (graph.isConstrainedEvent(me.getEvent())) {
@@ -697,7 +691,9 @@ mxGraphHandler.prototype.mouseMove = function (sender, me) {
 
 			this.currentDx = dx;
 			this.currentDy = dy;
-			this.updatePreviewShape();
+
+			
+				this.updatePreviewShape();
 
 			var target = null;
 			var cell = me.getCell();
@@ -705,12 +701,6 @@ mxGraphHandler.prototype.mouseMove = function (sender, me) {
 			if (graph.isDropEnabled() && this.highlightEnabled) {
 				// Contains a call to getCellAt to find the cell under the mouse
 				target = graph.getDropTarget(this.cells, me.getEvent(), cell, clone);
-			}
-
-
-			//如果目标位置cell时road 则把target设置为根节点
-			if (target && target.getSubCell('road')[0]) {
-				target = target.getSubCell('road')[0]
 			}
 
 			var state = graph.getView().getState(target);
@@ -735,7 +725,6 @@ mxGraphHandler.prototype.mouseMove = function (sender, me) {
 						var color = (error == null) ?
 							mxConstants.VALID_COLOR :
 							mxConstants.INVALID_CONNECT_TARGET_COLOR;
-
 						this.setHighlightColor(color);
 						highlight = true;
 					}
@@ -743,10 +732,7 @@ mxGraphHandler.prototype.mouseMove = function (sender, me) {
 			}
 
 			if (state != null && highlight) {
-				//如果targetcell是road则高亮提示
-				if (this.target.getAttribute('name') == 'road') {
-					this.highlight.highlight(state);
-				}
+				this.highlight.highlight(state);
 			} else {
 				this.highlight.hide();
 			}
@@ -764,18 +750,10 @@ mxGraphHandler.prototype.mouseMove = function (sender, me) {
 		var cursor = graph.getCursorForMouseEvent(me);
 
 		if (cursor == null && graph.isEnabled() && graph.isCellMovable(me.getCell())) {
-			//当鼠标移动是如果当前cell是有name属性的则显示手形
-			if (me.getCell()) {
-				cursor = mxConstants.CURSOR_CONNECT;
-
+			if (graph.getModel().isEdge(me.getCell())) {
+				cursor = mxConstants.CURSOR_MOVABLE_EDGE;
 			} else {
-
-				if (graph.getModel().isEdge(me.getCell())) {
-					cursor = mxConstants.CURSOR_MOVABLE_EDGE;
-				} else {
-					cursor = mxConstants.CURSOR_MOVABLE_VERTEX;
-				}
-
+				cursor = mxConstants.CURSOR_MOVABLE_VERTEX;
 			}
 		}
 
@@ -793,8 +771,8 @@ mxGraphHandler.prototype.mouseMove = function (sender, me) {
  * Updates the bounds of the preview shape.
  */
 mxGraphHandler.prototype.updatePreviewShape = function () {
+	
 	if (this.shape != null) {
-		this.shape.stroke = 'yellow'
 		this.shape.bounds = new mxRectangle(Math.round(this.pBounds.x + this.currentDx - this.graph.panDx),
 			Math.round(this.pBounds.y + this.currentDy - this.graph.panDy), this.pBounds.width, this.pBounds.height);
 		this.shape.redraw();
@@ -842,21 +820,7 @@ mxGraphHandler.prototype.mouseUp = function (sender, me) {
 				if (graph.isSplitEnabled() && graph.isSplitTarget(target, this.cells, me.getEvent())) {
 					graph.splitEdge(target, this.cells, null, dx, dy);
 				} else {
-					if (this.target && this.target.parent) {
-						this.target = this.target.parent
-					}
-
-
-					
-					//如果目标cell是一个股道时才能移动
-					if (this.target && this.target.getAttribute('type') && this.target.getAttribute('type') == "wc") {
-						//移动到股道中心位置
-						let g = new graphx()
-						g.movecelltocenter(this.cells[0], this.target.getSubCell('road')[0])
-						// this.target = window.graph.model.root
-						// this.moveCells(this.cells, dx, dy, false, this.target, me.getEvent());
-					}
-
+					this.moveCells(this.cells, dx, dy, clone, this.target, me.getEvent());
 				}
 			}
 		} else if (this.isSelectEnabled() && this.delayedSelection && this.cell != null) {
@@ -937,6 +901,7 @@ mxGraphHandler.prototype.shouldRemoveCellsFromParent = function (parent, cells, 
  * Moves the given cells by the specified amount.
  */
 mxGraphHandler.prototype.moveCells = function (cells, dx, dy, clone, target, evt) {
+
 	if (clone) {
 		cells = this.graph.getCloneableCells(cells);
 	}

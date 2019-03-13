@@ -1,4 +1,4 @@
-/**
+﻿/**
  * 
  * graph初始化后，开始注册自定义的一些方法，通过这些方法控制graph中的cell原件的展示属性。
  * 
@@ -135,7 +135,6 @@ class graphx {
         ay.map(ip => {
             ip.map(i => {
                 window.globalintervalcell.delete(i)
-                this.showcell(w)
             })
         })
         //红色闪烁显示：表示道岔已失去表示超过允许失去表示的规定时间（非特殊道岔，一般情况为30秒），此时道岔处于挤岔报警状态，
@@ -222,11 +221,6 @@ class graphx {
             }
         }
 
-    }
-
-    showcell(c) {
-        c.setVisible(1)
-        this.graph.refresh(c)
     }
 
     setSectorStatus(uid, status, nofresh) {
@@ -473,9 +467,6 @@ class graphx {
             window.globalintervalcell.delete(buttonla)
             window.globalintervalcell.delete(lightda)
             window.globalintervalcell.delete(light0)
-            this.showcell(buttonla)
-            this.showcell(lightda)
-            this.showcell(light0)
         }
 
         if (status.train_btn_flash) {
@@ -731,7 +722,7 @@ window.graphAction = {
 
 
     },
-
+   
     //按钮点击处理
     buttonClick(equip, button, e) {
 
@@ -849,7 +840,7 @@ window.graphAction = {
                 this.status = 12
                 window.graphActionCallback = i => {
                     //在区故解时显示全部区段
-                    Object.keys(window.switchbelongsector).map(k => {
+                    Object.keys(this.switchbelongsector).map(k => {
                         let c = window.parkequip[k.toLowerCase()]
                         c.setVisible(1)
                         window.graph.refresh(c)
@@ -1064,7 +1055,7 @@ window.graphAction = {
                 console.log('区段故障解锁:', equip.uid)
                 //隐藏cq股道
                 //在区故解时显示全部区段
-                Object.keys(window.switchbelongsector).map(k => {
+                Object.keys(this.switchbelongsector).map(k => {
                     let c = window.parkequip[k.toLowerCase()]
                     c.setVisible(0)
                     window.graph.refresh(c)
@@ -1109,9 +1100,6 @@ window.graphAction = {
 }
 
 
-//存放道岔和区段的对应关系
-
-window.switchbelongsector = {}
 
 /**
  * 
@@ -1206,29 +1194,6 @@ window.set_global_state = state => {
         window.graph.refresh()
         window.globalupdata = false
     }
-    //处理故障
-    if (['DATA_FIR'].includes(state['data_type'])) {
-        /*
-        *  故障信息报告帧
-        // */
-        // struct FIR_NODE {
-        //     BYTE op_code;           // 操作号
-        //     BYTE notice_code;       // 提示信息代码
-        //     WORD equip_code;        // 设备号
-        //     BYTE equip_property;    // 设备性质
-        //     BYTE revered;           // 预留
-        // };
-    }
-    //处理状态
-    if (['DATA_RSR'].includes(state['data_type'])) {
-        /*
-        *  运行状态报告帧
-        // */
-        // struct RSR_NODE {
-        //     BYTE server_status;
-        //     BYTE control_status;
-        // };
-    }
 }
 
 //获取cell
@@ -1274,35 +1239,13 @@ window.getNamedCell = cell => {
 
 //存放全部部件细粒度到包含道岔 区段 和信号机 按钮
 window.parkequip = {}
+
 //配置mxConstants
 mxConstants.DROP_TARGET_COLOR = '#ff0'
 mxConstants.HIGHLIGHT_OPACITY = 70
 
-/**
- * 
- * 配置地图文件
- * 
- */
-//道岔对应区段的json文件
-$.ajax({
-    url: "/stationswitchbelongsector.json",
-    type: "GET",
-    dataType: "json",
-    success: function (data) {
-        window.switchbelongsector = data
-    }
-})
-//战场图的xml
-window.defualtxmldoc = 'station.xml'
-//按钮表
-$.ajax({
-    url: "/mapbuttonindex.json",
-    type: "GET",
-    dataType: "json",
-    success: function (data) {
-        window.equipindex = data
-    }
-})
+
+
 
 /**
  * 
@@ -1323,8 +1266,7 @@ mxResources.loadDefaultBundle = false;
 var bundle = mxResources.getDefaultBundle(RESOURCE_BASE, mxLanguage) ||
     mxResources.getSpecialBundle(RESOURCE_BASE, mxLanguage);
 
-
-
+let defualtxmldoc = 'station.xml'
 // Fixes possible asynchronous requests
 mxUtils.getAll([bundle, STYLE_PATH + '/default.xml', defualtxmldoc], function (xhr) {
     // Adds bundle text to resources
@@ -1342,8 +1284,8 @@ mxUtils.getAll([bundle, STYLE_PATH + '/default.xml', defualtxmldoc], function (x
      * 
      */
 
-
     window.equipcellindex = {}
+    let equipindex = ["1 = SZC = LA", "2 = SZC = YA", "3 = SZC = YZSA", "4 = XC = LA", "5 = XC = YA", "6 = XC = YZSA", "7 = SZR = LA", "8 = SZR = YA", "9 = SZR = YZSA", "10 = XR = LA", "11 = XR = YA", "12 = XR = YZSA", "13 = D12 = LA", "14 = D12 = YA", "15 = D12 = YZSA", "16 = D14 = LA", "17 = D14 = YA", "18 = D14 = YZSA", "19 = XRZA = LA", "20 = XRZA = YA", "21 = XRZA = YZSA", "22 = XCZA = LA", "23 = XCZA = YA", "24 = XCZA = YZSA", "25 = S2 = LA", "26 = S4 = LA", "27 = S6 = LA", "28 = S8 = LA", "29 = S10 = LA", "30 = S12 = LA", "31 = S14 = LA", "32 = S3 = LA", "33 = S5 = LA", "34 = S7 = LA", "35 = S9 = LA", "36 = S11 = LA", "37 = S13 = LA", "38 = S15 = LA", "39 = SC = LA", "40 = SR = LA", "41 = S25 = LA", "42 = S24 = LA", "43 = S23 = LA", "44 = S16 = LA", "45 = D12 = DA", "46 = D14 = DA", "47 = S2 = DA", "48 = S4 = DA", "49 = S6 = DA", "50 = S8 = DA", "51 = S10 = DA", "52 = S12 = DA", "53 = S14 = DA", "54 = S3 = DA", "55 = S5 = DA", "56 = S7 = DA", "57 = S9 = DA", "58 = S11 = DA", "59 = S13 = DA", "60 = S15 = DA", "61 = SC = DA", "62 = SR = DA", "63 = S25 = DA", "64 = S24 = DA", "65 = S23 = DA", "66 = S16 = DA", "67 = D5A = DA", "68 = D7A = DA", "69 = D9A = DA", "70 = D11A = DA", "71 = D13A = DA", "72 = D15A = DA", "73 = D6A = DA", "74 = D8A = DA", "75 = D10A = DA", "76 = D12A = DA", "77 = D14A = DA", "78 = D16A = DA", "79 = D5B = DA", "80 = D7B = DA", "81 = D9B = DA", "82 = D11B = DA", "83 = D13B = DA", "84 = D15B = DA", "85 = D6B = DA", "86 = D8B = DA", "87 = D10B = DA", "88 = D12B = DA", "89 = D14B = DA", "90 = D16B = DA", "91 = D2 = DA", "92 = D4 = DA", "93 = D6 = DA", "94 = D8 = DA", "95 = D10 = DA", "96 = D16 = DA", "97 = D18 = DA", "98 = D20 = DA", "99 = D22 = DA", "100 = D24 = DA", "101 = D26 = DA", "102 = D16BZA = DA", "103 = D5BZA = DA", "104 = D6BZA = DA", "105 = D7BZA = DA", "106 = D8BZA = DA", "107 = D9BZA = DA", "108 = D10BZA = DA", "109 = D11BZA = DA", "110 = D12BZA = DA", "111 = D13BZA = DA", "112 = D14BZA = DA", "113 = D15BZA = DA", "114 = JT14 = DA", "115 = JT16 = DA", "116 = JT18 = DA", "117 = JT12 = DA", "118 = JT2 = DA", "119 = JT6 = DA", "120 = JT8 = DA", "121 = JT10 = DA", "122 = JT4 = DA", "123 = 2 = CA", "124 = 2DG = CQ", "125 = 4 = CA", "126 = 4DG = CQ", "127 = 6 = CA", "128 = 6_12DG = CQ", "129 = 8 = CA", "130 = 8_10DG = CQ", "131 = 10 = CA", "132 = 12 = CA", "133 = 14 = CA", "134 = 14_20DG = CQ", "135 = 16 = CA", "136 = 16_18DG = CQ", "137 = 18 = CA", "138 = 20 = CA", "139 = 22 = CA", "140 = 22_26DG = CQ", "141 = 24 = CA", "142 = 26 = CA", "143 = 28 = CA", "144 = 28DG = CQ", "145 = 30 = CA", "146 = 30_32DG = CQ", "147 = 32 = CA", "148 = 34 = CA", "149 = 34DG = CQ", "150 = 36 = CA", "151 = 36DG = CQ", "152 = 38 = CA", "153 = 38DG = CQ", "154 = 40 = CA", "155 = 40_42DG = CQ", "156 = 42 = CA", "157 = 44 = CA", "158 = 44_48DG = CQ", "159 = 46 = CA", "160 = 48 = CA", "161 = 50 = CA", "162 = 50_52DG = CQ", "163 = 52 = CA", "164 = 54 = CA", "165 = 54_60DG = CQ", "166 = 56 = CA", "167 = 58 = CA", "168 = 60 = CA", "169 = 62 = CA", "170 = 62DG = CQ", "171 = 16AG = WC", "172 = 15AG = WC", "173 = 14AG = WC", "174 = 13AG = WC", "175 = 12AG = WC", "176 = 11AG = WC", "177 = 10AG = WC", "178 = 9AG = WC", "179 = 8AG = WC", "180 = 7AG = WC", "181 = 6AG = WC", "182 = 5AG = WC", "183 = 1G = WC", "184 = 16BG = WC", "185 = 15BG = WC", "186 = 14BG = WC", "187 = 13BG = WC", "188 = 12BG = WC", "189 = 11BG = WC", "190 = 10BG = WC", "191 = 9BG = WC", "192 = 8BG = WC", "193 = 7BG = WC", "194 = 6BG = WC", "195 = 5BG = WC", "196 = D4G = WC", "197 = D2G = WC", "198 = D26WG = WC", "199 = D22G = WC", "200 = T2602G = WC", "201 = T2617G = WC", "202 = 2_34WG = WC", "203 = T2604G = WC", "204 = T2615G = WC", "205 = 4G = GD", "206 = 3G = GD", "207 = 2G = GD", "208 = 23G = GD", "209 = 24G = GD", "210 = 25G = GD", "211 = 场引导总锁 = BTN"]
 
     window.graph.importGraphModel(xhr[2].getDocumentElement())
 
@@ -1396,9 +1338,7 @@ mxUtils.getAll([bundle, STYLE_PATH + '/default.xml', defualtxmldoc], function (x
             cell.setAttribute('uid', uid)
             window.parkequip[cell.getAttribute('uid')] = cell
             //给所有部件的label添加文字
-            if (cell.getSubCell('label') && cell.getSubCell('label')[0]) {
-                cell.getSubCell('label')[0].setAttribute('label', uid)
-            }
+            cell.getSubCell('label')[0].setAttribute('label', uid)
 
 
 
@@ -1428,9 +1368,12 @@ mxUtils.getAll([bundle, STYLE_PATH + '/default.xml', defualtxmldoc], function (x
                             equipcellindex[button.id] = index
                         }
                     })
+
                 }
 
+
             })
+
 
         }
 
@@ -1479,8 +1422,8 @@ mxUtils.getAll([bundle, STYLE_PATH + '/default.xml', defualtxmldoc], function (x
                 //如果是道岔区段和道岔
                 let belongsectors = false,
                     cqid = 0
-                for (let i in window.switchbelongsector) {
-                    if (window.switchbelongsector[i].includes(Number(getCellUid(evt.sourceState.cell)))) {
+                for (let i in window.graphAction.switchbelongsector) {
+                    if (window.graphAction.switchbelongsector[i].includes(Number(getCellUid(evt.sourceState.cell)))) {
                         belongsectors = true
                         cqid = i
                         break
@@ -1498,7 +1441,14 @@ mxUtils.getAll([bundle, STYLE_PATH + '/default.xml', defualtxmldoc], function (x
                         type: 'cq'
                     }, {}, evt.evt)
                 }
+
+
+
+
             }
+
+
+
             mxLog.debug('mouseDown');
         },
         mouseMove: function (sender, evt) {
@@ -1516,9 +1466,9 @@ mxUtils.getAll([bundle, STYLE_PATH + '/default.xml', defualtxmldoc], function (x
 
     window.document_load_ready()
 
-    //滚动视图到中心
+    //滚动视图定位到某个cell
+    window.graph.scrollCellToVisible(parkequip[36], 1)
 
-    window.graph.center()
 
     //添加拖拽图标
 
@@ -1528,6 +1478,8 @@ mxUtils.getAll([bundle, STYLE_PATH + '/default.xml', defualtxmldoc], function (x
     }
 
     mxUtils.makeDraggable(document.querySelector('#dragicons img'), window.graph, dragcallback, document.querySelector('#dragicons img').cloneNode(), -15, -15, false, false, true);
+
+
 
 
 
@@ -1646,3 +1598,111 @@ $('#graphactionbtn button').click(function () {
 
     }
 })
+
+
+
+/**
+     * enum CODE_TYPE {
+  CODE_TYPE_NONE,
+  CODE_TYPE_DAOCHA,             // 道岔
+  CODE_TYPE_QUDUAN,             // 区段
+  CODE_TYPE_JZXH,               // 进站信号
+  CODE_TYPE_CZXH,               // 出站信号
+  CODE_TYPE_DCXH,               // 调车信号
+  CODE_TYPE_BSD,                // 表示灯
+  CODE_TYPE_QFJS,               // 铅封计数
+  CODE_TYPE_BJ                  // 报警
+};
+
+/ 信号状态
+struct SignalStatus {
+    BYTE red_blue: 1;             // 红/兰
+    BYTE white : 1;               // 白灯
+    BYTE yellow : 1;              // 黄灯
+    BYTE yellow_twice : 1;        // 双黄
+    BYTE green_yellow : 1;        // 绿黄
+    BYTE green : 1;               // 绿灯
+    BYTE red_white : 1;           // 红黄
+    BYTE green_twice : 1;         // 双绿
+
+    BYTE train_btn_flash : 1;     // 列车按钮闪亮
+    BYTE ligth_broken_wire : 1;   // 灯丝断丝
+    BYTE shunt_btn_light : 1;     // 调车按钮闪亮
+    BYTE flash : 1;               // 闪光
+    BYTE reversed : 1;            // 0
+    BYTE reversed2 : 1;           // 0
+    BYTE delay_180s : 1;          // 延时3分钟
+    BYTE delay_30s : 1;           // 延时30秒
+                                  
+    BYTE guaid_10s : 1;           // 引导10s
+    BYTE ramp_delay_lock : 1;     // 坡道延时解锁
+    BYTE closed : 1;              // 封闭
+    BYTE notice : 5;              // 提示信息
+};
+
+// 道岔状态
+struct TurnoutStatus {
+    BYTE pos : 1;                 // 定位
+    BYTE pos_reverse : 1;         // 反位
+    BYTE hold : 1;                // 占用
+    BYTE lock : 1;                // 锁闭
+    BYTE lock_s : 1;              // 单锁
+    BYTE closed : 1;              // 封闭
+    BYTE lock_gt : 1;             // 引导总锁闭
+    BYTE preline_blue_belt : 1;   // 预排兰光带
+    BYTE lock_protect : 1;        // 防护锁闭
+    BYTE reversed : 2;            // 保留
+    BYTE notice : 5;              // 提示信息
+};
+
+// 区段状态
+struct SectionStatus {
+    BYTE hold : 1;                // 占用
+    BYTE lock : 1;                // 锁闭
+    BYTE block : 1;               // 封锁
+    BYTE notice : 5;              // 提示信息
+};
+
+// 表示灯
+struct IndicatorLightStatus {
+    BYTE light : 1;               // 亮灯
+    BYTE flash : 1;               // 闪灯
+    BYTE red : 1;                 // 红灯
+    BYTE yellow : 1;              // 黄灯
+    BYTE green : 1;               // 绿灯
+    BYTE blue : 1;                // 蓝灯
+    BYTE white : 1;               // 白灯
+    BYTE yellow2 : 1;             // 黄灯
+};
+
+// 铅封计数
+struct SealCount {
+    WORD value;
+};
+
+// 报警
+struct AlarmStatus {
+    BYTE value;
+};
+     * 
+     */
+
+/***
+     * 
+     * 
+     * 设置道岔的状态
+     * status:{
+    pos : 1,              
+    pos_reverse : 1,      
+    hold : 1,             
+    lock : 1,             
+    lock_s : 1,           
+    closed : 1,           
+    lock_gt : 1,          
+    preline_blue_belt : 1,
+    lock_protect : 1,     
+    reversed : 2,         
+    notice : 5,           
+}
+     * 
+     */
