@@ -100,6 +100,13 @@ class graphx {
                 i.setVisible(0)
             })
         }
+        let ay = [reverse, direct]
+        ay.map(ip => {
+            ip.map(i => {
+                window.globalintervalcell.delete(i)
+                this.showcell(1)
+            })
+        })
 
         /**
          * 
@@ -131,13 +138,7 @@ class graphx {
             })
         }
 
-        let ay = [reverse, direct]
-        ay.map(ip => {
-            ip.map(i => {
-                window.globalintervalcell.delete(i)
-                this.showcell(w)
-            })
-        })
+
         //红色闪烁显示：表示道岔已失去表示超过允许失去表示的规定时间（非特殊道岔，一般情况为30秒），此时道岔处于挤岔报警状态，
         if (status.pos == 1 && status.pos_reverse == 1) {
             let a = [reverse, direct]
@@ -225,8 +226,10 @@ class graphx {
     }
 
     showcell(c) {
-        c.setVisible(1)
-        this.graph.refresh(c)
+        if (c && c.setVisible) {
+            c.setVisible(1)
+            this.graph.refresh(c)
+        }
     }
 
     setSectorStatus(uid, status, nofresh) {
@@ -295,6 +298,24 @@ class graphx {
         }
     }
 
+    setLightStatus(uid, status, nofresh) {
+        let cell = this.getEquip(uid)
+        if (!cell) return
+        cell.equipstatus = status
+        //获取零件
+        let light = cell.getSubCell('light')
+
+        //初始化零件的闪烁状态为不闪烁
+        cell.twinkle = false
+
+
+        if (light.length > 0) {
+            this.setFillColor(light[0], '#f00', nofresh)
+        } else {
+            this.setFillColor(cell, '#f00', nofresh)
+        }
+    }
+
     setSignalStatus(uid, status, nofresh) {
         let cell = this.getEquip(uid)
         if (!cell) return
@@ -316,7 +337,15 @@ class graphx {
         light.map(i => i.setVisible(1) + this.setFillColor(i, '#000', nofresh))
         //重置lable颜色
         namelabel.map(i => this.setLabelText(i, `<div style="background:none;color:#fff;">${uid}</div>`, nofresh))
-
+        let buttonla = button.find(i => i.getAttribute('type') == 'la')
+        let lightda = light.find(i => i.getAttribute('type') == 'da')
+        let light0 = light.find(i => i.getAttribute('type') != 'da')
+        window.globalintervalcell.delete(buttonla)
+        window.globalintervalcell.delete(lightda)
+        window.globalintervalcell.delete(light0)
+        this.showcell(buttonla)
+        this.showcell(lightda)
+        this.showcell(light0)
         //加边框显示
         if (!boundary.length) {
 
@@ -464,18 +493,6 @@ class graphx {
 
         if (status.green_twice) {
 
-        }
-
-        if (true) {
-            let buttonla = button.find(i => i.getAttribute('type') == 'la')
-            let lightda = light.find(i => i.getAttribute('type') == 'da')
-            let light0 = light.find(i => i.getAttribute('type') != 'da')
-            window.globalintervalcell.delete(buttonla)
-            window.globalintervalcell.delete(lightda)
-            window.globalintervalcell.delete(light0)
-            this.showcell(buttonla)
-            this.showcell(lightda)
-            this.showcell(light0)
         }
 
         if (status.train_btn_flash) {
@@ -657,7 +674,7 @@ window.graphAction = {
                 this.status = 0x1A
                 break
             case 5:
-                this.status = 0xD5
+                this.status = 0x45
                 break
             case 6:
                 this.status = 0x25
@@ -846,7 +863,7 @@ window.graphAction = {
                 //调出键盘
                 ikeyboard.options.position.of = $('#graphactionbtn button:nth-child(5)')
                 ikeyboard.reveal().insertText('')
-                this.status = 12
+                this.status = 13
                 window.graphActionCallback = i => {
                     //在区故解时显示全部区段
                     Object.keys(window.switchbelongsector).map(k => {
@@ -866,7 +883,7 @@ window.graphAction = {
                 //调出键盘
                 ikeyboard.options.position.of = $('#graphactionbtn button:nth-child(2)')
                 ikeyboard.reveal().insertText('')
-                this.status = 13
+                this.status = 14
                 window.graphActionCallback = i => {
                     console.log('点击引导总锁按钮:', 'BTN')
                     this.clickPath.push('BTN')
@@ -878,14 +895,14 @@ window.graphAction = {
             //按钮封闭
             if (equip == 'signalblock') {
                 console.log('点击按钮封闭')
-                this.status = 14
+                this.status = 15
                 this.startCounting()
                 return
             }
             //按钮解封
             if (equip == 'signalunblock') {
                 console.log('点击按钮解封')
-                this.status = 15
+                this.status = 16
                 this.startCounting()
                 return
             }
@@ -952,32 +969,113 @@ window.graphAction = {
         //进路取消
         if (this.status == 5) {
 
+            if (equip.cell.equipstatus.red_white) {
+                //取消引导进路
+                this.status = 5
+                if (button && button.type && (button.type == 'la' || button.type == 'ya')) {
+                    console.log('总人解+引导信号机始端按钮:', equip.uid)
 
-            //取消引导进路
+                    this.clickPath.push({
+                        index: Number(button.uindex),
+                        name: equip.cell.equipstatus.name
+                    })
+                    this.commitAction()
+                    return
+                }
+            } else {
 
-            if (button && button.type && (button.type == 'la' || button.type == 'ya')) {
-                console.log('总人解+引导信号机始端按钮:', equip.uid)
+                this.status = 12
+                if (button && button.type && (button.type == 'la' || button.type == 'da')) {
+                    console.log('总人解+列车/调车始端按钮:', equip.uid)
 
-                this.clickPath.push({
-                    index: Number(button.uindex),
-                    name: equip.cell.equipstatus.name
-                })
-                this.commitAction()
-                return
+                    this.clickPath.push({
+                        index: Number(button.uindex),
+                        name: equip.cell.equipstatus.name
+                    })
+                    this.commitAction()
+                    return
+                }
             }
 
-            //进路人解
+            // return
 
-            if (button && button.type && (button.type == 'la' || button.type == 'da')) {
-                console.log('总人解+列车/调车始端按钮:', equip.uid)
+            // if (button.type == 'da') {
+            //     //进路人解
+            //     this.status = 12
+            //     if (button && button.type && (button.type == 'la' || button.type == 'da')) {
+            //         console.log('总人解+列车/调车始端按钮:', equip.uid)
 
-                this.clickPath.push({
-                    index: Number(button.uindex),
-                    name: equip.cell.equipstatus.name
-                })
-                this.commitAction()
-                return
-            }
+            //         this.clickPath.push({
+            //             index: Number(button.uindex),
+            //             name: equip.cell.equipstatus.name
+            //         })
+            //         this.commitAction()
+            //         return
+            //     }
+            // }
+
+            // if (button.type == 'ya') {
+            //     //取消引导进路
+            //     this.status = 5
+            //     if (button && button.type && (button.type == 'la' || button.type == 'ya')) {
+            //         console.log('总人解+引导信号机始端按钮:', equip.uid)
+
+            //         this.clickPath.push({
+            //             index: Number(button.uindex),
+            //             name: equip.cell.equipstatus.name
+            //         })
+            //         this.commitAction()
+            //         return
+            //     }
+            // }
+
+
+
+            // if (button.type == 'la') {
+            //     let type5 = false
+            //     equip.cell.getSubCell('button').map(x => {
+            //         if (x.getAttribute('type') == 'ya') {
+
+            //             type5 = true
+
+            //         }
+            //     })
+
+            //     if (type5) {
+            //         //取消引导进路
+            //         this.status = 5
+            //         if (button && button.type && (button.type == 'la' || button.type == 'ya')) {
+            //             console.log('总人解+引导信号机始端按钮:', equip.uid)
+
+            //             this.clickPath.push({
+            //                 index: Number(button.uindex),
+            //                 name: equip.cell.equipstatus.name
+            //             })
+            //             this.commitAction()
+            //             return
+            //         }
+            //     } else {
+
+            //         //进路人解
+            //         this.status = 12
+            //         if (button && button.type && (button.type == 'la' || button.type == 'da')) {
+            //             console.log('总人解+列车/调车始端按钮:', equip.uid)
+
+            //             this.clickPath.push({
+            //                 index: Number(button.uindex),
+            //                 name: equip.cell.equipstatus.name
+            //             })
+            //             this.commitAction()
+            //             return
+            //         }
+            //     }
+
+            // }
+
+
+
+
+
         }
         //道岔总定
         if (this.status == 6) {
@@ -1059,7 +1157,8 @@ window.graphAction = {
             }
         }
         //区段故障解锁
-        if (this.status == 12) {
+        if (this.status == 13) {
+            console.log(equip, button)
             if (equip.type == 'wc' || equip.type == 'cq') {
                 console.log('区段故障解锁:', equip.uid)
                 //隐藏cq股道
@@ -1079,7 +1178,7 @@ window.graphAction = {
             }
         }
         //按钮封闭
-        if (this.status == 14) {
+        if (this.status == 15) {
             if (button && button.type && (button.type == 'da' || button.type == 'la')) {
                 console.log('按钮封闭:', equip.uid)
 
@@ -1092,7 +1191,7 @@ window.graphAction = {
             }
         }
         //按钮解封
-        if (this.status == 15) {
+        if (this.status == 16) {
             if (button && button.type && (button.type == 'da' || button.type == 'la')) {
                 console.log('按钮解封:', equip.uid)
 
@@ -1178,6 +1277,23 @@ window.set_global_state = state => {
     //1 道岔
     //2 区段
     //345 出站信号 进站信号 调车信号
+    /**
+     * 
+     * // 表示灯
+struct IndicatorLightStatus {
+    BYTE light : 1;               // 亮灯
+    BYTE flash : 1;               // 闪灯
+    BYTE red : 1;                 // 红灯
+    BYTE yellow : 1;              // 黄灯
+    BYTE green : 1;               // 绿灯
+    BYTE blue : 1;                // 蓝灯
+    BYTE white : 1;               // 白灯
+    BYTE yellow2 : 1;             // 黄灯
+};
+  CODE_TYPE_BSD,                // 表示灯
+  CODE_TYPE_QFJS,               // 铅封计数
+  CODE_TYPE_BJ                  // 报警
+     */
 
     let controlgraph = new graphx()
     let model = controlgraph.graph.getModel()
@@ -1199,6 +1315,9 @@ window.set_global_state = state => {
                 case 4:
                 case 5:
                     controlgraph.setSignalStatus(i.name, i, true)
+                    break
+                case 6:
+                    controlgraph.setLightStatus(i.name, i, true)
                     break
             }
         })
@@ -1228,6 +1347,9 @@ window.set_global_state = state => {
         //     BYTE server_status;
         //     BYTE control_status;
         // };
+
+
+
     }
 }
 
@@ -1476,7 +1598,7 @@ mxUtils.getAll([bundle, STYLE_PATH + '/default.xml', defualtxmldoc], function (x
                     }, evt.evt)
                 }
 
-                //如果是道岔区段和道岔
+                // 如果是道岔区段和道岔
                 let belongsectors = false,
                     cqid = 0
                 for (let i in window.switchbelongsector) {
@@ -1489,14 +1611,22 @@ mxUtils.getAll([bundle, STYLE_PATH + '/default.xml', defualtxmldoc], function (x
 
                 if (belongsectors) {
                     window.graphAction.buttonClick({
-                        uid: cqid,
+                        cell: getEquipCell(evt.sourceState.cell),
                         type: 'cq'
-                    }, {}, evt.evt)
+                    }, {
+                        name: evt.sourceState.cell.getAttribute('name'),
+                        uindex: equipcellindex[evt.sourceState.cell.id] ? equipcellindex[evt.sourceState.cell.id] : equipcellindex[getEquipCell(evt.sourceState.cell).id],
+                        type: evt.sourceState.cell.getAttribute('type')
+                    }, evt.evt)
                 } else if (evt.sourceState.cell.getAttribute('belongsector')) {
                     window.graphAction.buttonClick({
-                        uid: evt.sourceState.cell.getAttribute('belongsector'),
+                        cell: getEquipCell(evt.sourceState.cell),
                         type: 'cq'
-                    }, {}, evt.evt)
+                    }, {
+                        name: evt.sourceState.cell.getAttribute('name'),
+                        uindex: equipcellindex[evt.sourceState.cell.id] ? equipcellindex[evt.sourceState.cell.id] : equipcellindex[getEquipCell(evt.sourceState.cell).id],
+                        type: evt.sourceState.cell.getAttribute('type')
+                    }, evt.evt)
                 }
             }
             mxLog.debug('mouseDown');

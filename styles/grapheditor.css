@@ -7,6 +7,19 @@
 	border: none;
 }
 
+#graphactionbtn button{
+    width: 50px;
+    height: 30px;
+    padding: 0;
+    line-height: 11px !important;
+    font-weight: bold;
+    float: left;
+    border: 2px;
+    border-left: 2px solid white;
+    border-top: 2px solid white;
+    border-right: 2px solid gray;
+    border-bottom: 2px solid gray;
+}
 body {
 	background: #000;
 }
