@@ -83,17 +83,7 @@ class graphx {
         })
         //重置lable颜色
         namelabel.map(i => this.setLabelText(i, `<div style="background:none;color:#fff;">${uid}</div>`, nofresh))
-        //加边框显示
-        if (!boundary.length) {
-            //获取direct的坐标作为参考,创建一个圆形边框
-            let referenceposition = cell.getSubCell('reverse')[0].geometry
-            let boundaryvalue = cell.getSubCell('reverse')[0].value.cloneNode(true)
-            boundaryvalue.setAttribute('name', 'boundary')
-            let newboundary = this.graph.insertVertex(cell, null, '', referenceposition.x - 4, referenceposition.y - 8, 30, 30, "shape=ellipse;whiteSpace=wrap;html=1;aspect=fixed;strokeColor=red;fillColor=none;cursor=pointer;");
-            newboundary.value = boundaryvalue
-            newboundary.specialname = 'lock'
-            boundary.push(newboundary)
-        }
+
         //隐藏边框
         if (boundary.length) {
             boundary.map(i => {
@@ -299,6 +289,22 @@ class graphx {
     }
 
     setLightStatus(uid, status, nofresh) {
+
+        //不在graph上的dom控制
+
+        if (uid == '场引导总锁闭BTN') {
+
+            if (status.light) {
+                $($('#graphactionbtn button')[0]).css({
+                    background: "yellowgreen"
+                })
+            } else {
+                $($('#graphactionbtn button')[0]).attr('style', '')
+            }
+
+            return
+        }
+
         let cell = this.getEquip(uid)
         if (!cell) return
         cell.equipstatus = status
@@ -308,12 +314,57 @@ class graphx {
         //初始化零件的闪烁状态为不闪烁
         cell.twinkle = false
 
-
-        if (light.length > 0) {
-            this.setFillColor(light[0], '#f00', nofresh)
+        // BYTE light : 1;               // 亮灯
+        // BYTE flash : 1;               // 闪灯
+        // BYTE red : 1;                 // 红灯
+        // BYTE yellow : 1;              // 黄灯
+        // BYTE green : 1;               // 绿灯
+        // BYTE blue : 1;                // 蓝灯
+        // BYTE white : 1;               // 白灯
+        // BYTE yellow2 : 1;             // 黄灯
+        let lighto
+        if (light && light.length > 0) {
+            lighto = light[0]
         } else {
-            this.setFillColor(cell, '#f00', nofresh)
+            lighto = cell
         }
+        window.globalintervalcell.delete(lighto)
+        this.showcell(lighto)
+
+        if (status.light) {
+            this.setFillColor(lighto, '#0f0', nofresh)
+        } else {
+            this.setFillColor(lighto, '#000', nofresh)
+        }
+
+        if (status.yellow2) {
+            this.setFillColor(lighto, '#ff0', nofresh)
+        }
+
+        if (status.white) {
+            this.setFillColor(lighto, '#fff', nofresh)
+        }
+        if (status.blue) {
+            this.setFillColor(lighto, '#00f', nofresh)
+        }
+
+        if (status.green) {
+            this.setFillColor(lighto, '#0f0', nofresh)
+        }
+
+        if (status.yellow) {
+            this.setFillColor(lighto, '#ff0', nofresh)
+        }
+
+        if (status.red) {
+            this.setFillColor(lighto, '#f00', nofresh)
+        }
+
+        if (status.flash) {
+            window.globalintervalcell.add(lighto)
+        }
+
+
     }
 
     setSignalStatus(uid, status, nofresh) {
@@ -334,7 +385,14 @@ class graphx {
         //初始化零件的闪烁状态为不闪烁
         cell.twinkle = false
         //重置显示颜色
-        light.map(i => i.setVisible(1) + this.setFillColor(i, '#000', nofresh))
+        light.map(i => {
+            i.setVisible(1)
+            if (!!i.getAttribute('defaultcolor') && !window['cellseparatecolor' + i.id]) {
+                window['cellseparatecolor' + i.id] = i.getAttribute('defaultcolor')
+            }
+            this.setFillColor(i, window['cellseparatecolor' + i.id], nofresh)
+
+        })
         //重置lable颜色
         namelabel.map(i => this.setLabelText(i, `<div style="background:none;color:#fff;">${uid}</div>`, nofresh))
         let buttonla = button.find(i => i.getAttribute('type') == 'la')
@@ -432,22 +490,9 @@ class graphx {
 
         if (status.red_blue) {
 
-
-            let lightda = light.find(i => i.getAttribute('type') == 'da')
-            let light0 = light.find(i => i.getAttribute('type') != 'da')
-
-
-            if (lightda) this.setFillColor(lightda, '#f00', nofresh)
-
-            if ((/^D\d*/i).test(status.name)) {
-                if (lightda) this.setFillColor(lightda, '#00f', nofresh)
-                if (light0) this.setFillColor(light0, '#00f', nofresh)
-                if (status.name.toLowerCase() == 'd16') {
-                    if (lightda) this.setFillColor(lightda, '#f00', nofresh)
-                    if (light0) this.setFillColor(light0, '#f00', nofresh)
-                }
-
-            }
+            light.find(i => {
+                this.setFillColor(i, window['cellseparatecolor' + i.id], nofresh)
+            })
 
         }
 
@@ -641,7 +686,7 @@ window.graphAction = {
                 return
             }
             console.log(Math.floor(15000 - (Date.now() - this.startTime)))
-            $('#countingdown').html('操作剩余时间：' + Math.ceil((15000 - (Date.now() - this.startTime)) / 1000) + 's')
+            $('#countingdown').html('操作剩余时间：<span style="color:red">' + Math.ceil((15000 - (Date.now() - this.startTime)) / 1000) + 's</span>')
         }, 1000);
         setTimeout(i => {
             if (this.actionMark != actionMark) return
@@ -650,6 +695,7 @@ window.graphAction = {
     },
     //重置状态
     resetStatus() {
+        console.log(1111)
         this.startTime = null
         this.status = 0
         this.actionMark = Math.random()
@@ -760,6 +806,9 @@ window.graphAction = {
             if (button && button.type && button.type == 'la') {
                 console.log('点击始端列车按钮:', equip.uid)
 
+                document.querySelector('#signalname').innerHTML = ('始列' + equip.cell.equipstatus.name)
+
+
                 this.clickPath.push({
                     index: Number(button.uindex),
                     name: equip.cell.equipstatus.name
@@ -771,7 +820,7 @@ window.graphAction = {
             //始端调车按钮（DA）
             if (button && button.type && button.type == 'da') {
                 console.log('点击始端调车按钮:', equip.uid)
-
+                document.querySelector('#signalname').innerHTML = ('始调' + equip.cell.equipstatus.name)
                 this.clickPath.push({
                     index: Number(button.uindex),
                     name: equip.cell.equipstatus.name
@@ -829,6 +878,8 @@ window.graphAction = {
                 this.startCounting()
                 return
             }
+
+
             //道岔单锁
             if (equip == 'switchlock') {
                 console.log('点击道岔单锁按钮')
@@ -886,7 +937,7 @@ window.graphAction = {
                 this.status = 14
                 window.graphActionCallback = i => {
                     console.log('点击引导总锁按钮:', 'BTN')
-                    this.clickPath.push('BTN')
+                    this.clickPath.push(211)
                     this.commitAction()
                     window.graphActionCallback = null
                 }
@@ -922,7 +973,7 @@ window.graphAction = {
         if (this.status == 1) {
             if (button && button.type && button.type == 'la' && equip.uid != this.clickPath[0]) {
                 console.log('点击终端列车按钮:', equip.uid)
-
+                document.querySelector('#signalname').innerHTML += ('——终列' + equip.cell.equipstatus.name)
                 this.clickPath.push({
                     index: Number(button.uindex),
                     name: equip.cell.equipstatus.name
@@ -936,6 +987,7 @@ window.graphAction = {
         if (this.status == 2) {
             if (button && button.type && button.type == 'da' && equip.uid != this.clickPath[0]) {
                 console.log('点击终端调车按钮:', equip.uid)
+                document.querySelector('#signalname').innerHTML += ('——终调' + equip.cell.equipstatus.name)
                 this.clickPath.push({
                     index: Number(button.uindex),
                     name: equip.cell.equipstatus.name
@@ -969,7 +1021,7 @@ window.graphAction = {
         //进路取消
         if (this.status == 5) {
 
-            if (equip.cell.equipstatus.red_white) {
+            if (equip.cell && equip.cell.equipstatus.red_white) {
                 //取消引导进路
                 this.status = 5
                 if (button && button.type && (button.type == 'la' || button.type == 'ya')) {
@@ -982,7 +1034,7 @@ window.graphAction = {
                     this.commitAction()
                     return
                 }
-            } else {
+            } else if (equip.cell) {
 
                 this.status = 12
                 if (button && button.type && (button.type == 'la' || button.type == 'da')) {
@@ -1203,6 +1255,14 @@ window.graphAction = {
                 return
             }
         }
+        //清除
+        if (equip == 'clearaction') {
+            console.log('点击清除')
+            this.resetStatus()
+            return
+        }
+
+
 
     }
 }
@@ -1248,7 +1308,7 @@ mxCell.prototype.getSubCell = function (name) {
             let cellarray = []
             for (let i = 0; i < cells.length; i++) {
                 if (cells[i].children) {
-                    cellarray.concat(loop(cells[i].children))
+                    cellarray = cellarray.concat(loop(cells[i].children))
                 } else if (cells[i].getAttribute('name') == name) {
                     cellarray.push(cells[i])
                 }
@@ -1327,6 +1387,8 @@ struct IndicatorLightStatus {
     }
     //处理故障
     if (['DATA_FIR'].includes(state['data_type'])) {
+
+        document.querySelector('#signalname').innerHTML = ''
         /*
         *  故障信息报告帧
         // */
@@ -1337,6 +1399,84 @@ struct IndicatorLightStatus {
         //     BYTE equip_property;    // 设备性质
         //     BYTE revered;           // 预留
         // };
+        // state.data.equip_code
+
+
+        let equip
+
+        for (let i in parkequip) {
+            if (parkequip[i].equipstatus && parkequip[i].equipstatus.index == state.data.equip_code) {
+                equip = parkequip[i]
+            }
+        }
+
+        let equiptype = [{
+            type: 0x55,
+            name: '列车信号'
+        }, {
+            type: 0xaa,
+            name: '调车信号'
+        }, {
+            type: 0x1F,
+            name: '道岔'
+        }, {
+            type: 0x1E,
+            name: '区段'
+        }, {
+            type: 0x21,
+            name: '非进路调车'
+        }, {
+            type: 0xA5,
+            name: '按钮'
+        }]
+
+        let et = equiptype.find(p => {
+            return p.type == state.data.equip_property
+        })
+
+        let equiptypeinfo = [{
+            type: 0,
+            name: ''
+        }, {
+            type: 1,
+            name: '进路选不出'
+        }, {
+            type: 2,
+            name: '信号不能保持'
+        }, {
+            type: 3,
+            name: '命令不能执行'
+        }, {
+            type: 4,
+            name: '信号不能开放'
+        }, {
+            type: 5,
+            name: '灯丝断丝'
+        }, {
+            type: 6,
+            name: '2灯丝断丝'
+        }, {
+            type: 6,
+            name: '操作错误'
+        }, {
+            type: 6,
+            name: '操作无效'
+        }, {
+            type: 6,
+            name: '不能自动解锁'
+        }, {
+            type: 0x0a,
+            name: '进路不能闭锁'
+        }]
+
+        let eti = equiptypeinfo.find(p => {
+            return p.type == state.data.notice_code
+        })
+
+        console.log(`${et.name}${equip.equipstatus.name}${eti.name}`)
+
+        document.querySelector('#firnode').innerHTML = `${et.name}${equip.equipstatus.name}${eti.name}`
+
     }
     //处理状态
     if (['DATA_RSR'].includes(state['data_type'])) {
@@ -1344,11 +1484,22 @@ struct IndicatorLightStatus {
         *  运行状态报告帧
         // */
         // struct RSR_NODE {
-        //     BYTE server_status;
-        //     BYTE control_status;
+        //     BYTE server_status //主备机;
+        //     BYTE control_status 站控非站控;
         // };
 
+        if (state.data.server_status == 0x55) {
 
+        } else if (state.data.server_status == 0xaa) {
+
+        }
+
+        if (state.data.control_status == 0x55) {
+
+
+        } else if (state.data.control_status == 0xaa) {
+
+        }
 
     }
 }
@@ -1501,9 +1652,13 @@ mxUtils.getAll([bundle, STYLE_PATH + '/default.xml', defualtxmldoc], function (x
 
         //给灯加一个底圈
         if (cell.getAttribute('name') == 'light') {
+
+
             let referenceposition = cell.geometry,
                 newboundary = this.graph.insertVertex(cell.parent, null, '', referenceposition.x, referenceposition.y, 19, 19, "shape=ellipse;whiteSpace=wrap;html=1;aspect=fixed;strokeColor=#3694FF;fillColor=none;cursor=pointer;");
             window.graph.orderCells(1, [newboundary])
+
+
         }
 
         //隐藏train的图例
@@ -1511,6 +1666,72 @@ mxUtils.getAll([bundle, STYLE_PATH + '/default.xml', defualtxmldoc], function (x
             origintrain = cell
             cell.setVisible(0)
         }
+
+        //处理道岔
+        if (cell.getAttribute('type') == 'ca') {
+
+            //获取正位反位的旋转值
+            let originreverse = cell.getSubCell('reverse')[0]
+            let origindirect = cell.getSubCell('direct')[0]
+            let originroad
+            let originrotateroad
+            if (Math.abs(graph.getCellStyle(origindirect).rotation) > Math.abs(graph.getCellStyle(originreverse).rotation)) {
+                originroad = originreverse
+                originrotateroad = origindirect
+            } else {
+                originroad = origindirect
+                originrotateroad = originreverse
+            }
+            let angle
+            if (graph.getCellStyle(originrotateroad).rotation > 0) {
+                angle = graph.getCellStyle(originrotateroad).rotation
+            } else {
+                angle = 360 + graph.getCellStyle(originrotateroad).rotation
+            }
+
+            let upon
+            let rightward = true
+            if (originrotateroad.geometry.y > originroad.geometry.y) {
+                upon = false
+            } else {
+                upon = true
+            }
+
+            if ((angle > 0 && angle < 90) || (angle > 180 && angle < 270)) {
+                //  \
+                if (upon) {
+                    rightward = false
+                }
+            }
+            if ((angle > 90 && angle < 180) || (angle > 270 && angle < 360)) {
+                //  /
+                if (!upon) {
+                    rightward = false
+                }
+            }
+
+            if(cell.getAttribute('uid') == 16){
+                console.log(upon,rightward,angle)
+            }
+
+
+
+            //获取direct的坐标作为参考,创建一个圆形边框
+            let referenceposition = originroad.geometry
+            let boundaryvalue = originroad.value.cloneNode(true)
+            boundaryvalue.setAttribute('name', 'boundary')
+            let newboundary
+            if (!rightward) {
+                 newboundary = this.graph.insertVertex(cell, null, '', referenceposition.x - 15 + referenceposition.width, referenceposition.y - 9, 23, 23, "shape=ellipse;whiteSpace=wrap;html=1;aspect=fixed;strokeColor=red;fillColor=none;cursor=pointer;");
+            } else {
+                 newboundary = this.graph.insertVertex(cell, null, '', referenceposition.x - 6, referenceposition.y - 9, 23, 23, "shape=ellipse;whiteSpace=wrap;html=1;aspect=fixed;strokeColor=red;fillColor=none;cursor=pointer;");
+            }
+            newboundary.value = boundaryvalue
+            newboundary.specialname = 'lock'
+
+
+        }
+
 
         //如果发现uid属性则加入全局存放
         if (cell.getAttribute('uid')) {
@@ -1705,6 +1926,9 @@ $('.ui-keyboard-input').bind('visible hidden beforeClose accepted canceled restr
                     case 13:
                         window.graphActionCallback()
                         break
+                    case 14:
+                        window.graphActionCallback()
+                        break
                 }
 
             } else {
@@ -1746,6 +1970,10 @@ $('#graphactionbtn button').click(function () {
         case 6:
             //道岔总反
             window.graphAction.buttonClick('switchreverse')
+            break
+        case 7:
+            //清除
+            window.graphAction.buttonClick('clearaction')
             break
         case 8:
             //道岔单锁
