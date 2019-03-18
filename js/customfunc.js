@@ -79,7 +79,7 @@ class graphx {
         //重置显示颜色
         let allparts = [reverse, direct, roadreverse, roaddirect, roadentrance]
         allparts.map(a => {
-            a.map(i => i.setVisible(1) + this.setFillColor(i, '#3694FF', nofresh))
+            a.map(i => i.setVisible(1) + this.setFillColor(i, '#5578b6', nofresh))
         })
         //重置lable颜色
         namelabel.map(i => this.setLabelText(i, `<div style="background:none;color:#fff;">${uid}</div>`, nofresh))
@@ -103,6 +103,17 @@ class graphx {
          * 开始设置零件样式
          * 
          */
+
+        
+
+        if (status.preline_blue_belt) {
+            let a = [roadentrance,roadreverse, roaddirect]
+            a.map(ip => {
+                ip.map(i => {
+                    this.setFillColor(i, '#00f', nofresh)
+                })
+            })
+        }
 
         //绿色稳定显示：表示道岔此时处于定位位置；
         if (status.pos) {
@@ -242,7 +253,7 @@ class graphx {
         let allparts = [road]
         allparts.map(a => {
             //空闲蓝色
-            a.map(i => i.setVisible(1) + this.setFillColor(i, '#3694FF', nofresh))
+            a.map(i => i.setVisible(1) + this.setFillColor(i, '#5578b6', nofresh))
         })
         //重置lable颜色
         namelabel.map(i => this.setLabelText(i, `<div style="background:none;color:#fff;">${uid}</div>`, nofresh))
@@ -391,6 +402,7 @@ class graphx {
                 window['cellseparatecolor' + i.id] = i.getAttribute('defaultcolor')
             }
             this.setFillColor(i, window['cellseparatecolor' + i.id], nofresh)
+            this.setStrokeColor(i, '#5578b6', nofresh)
 
         })
         //重置lable颜色
@@ -492,6 +504,8 @@ class graphx {
 
             light.find(i => {
                 this.setFillColor(i, window['cellseparatecolor' + i.id], nofresh)
+                this.setStrokeColor(i, window['cellseparatecolor' + i.id], nofresh)
+
             })
 
         }
@@ -500,6 +514,7 @@ class graphx {
 
             let lightda = light.find(i => i.getAttribute('type') == 'da')
             if (lightda) this.setFillColor(lightda, '#fff', nofresh)
+            if (lightda) this.setStrokeColor(lightda, '#fff', nofresh)
 
         }
 
@@ -508,6 +523,7 @@ class graphx {
             let buttonla = button.find(i => i.getAttribute('type') == 'la')
             let light0 = light.find(i => i.getAttribute('type') != 'da')
             if (buttonla) this.setFillColor(light0, '#ff0', nofresh)
+            if (buttonla) this.setStrokeColor(light0, '#ff0', nofresh)
 
         }
 
@@ -524,6 +540,7 @@ class graphx {
             let buttonla = button.find(i => i.getAttribute('type') == 'la')
             let light0 = light.find(i => i.getAttribute('type') != 'da')
             if (buttonla) this.setFillColor(light0, '#0f0', nofresh)
+            if (buttonla) this.setStrokeColor(light0, '#0f0', nofresh)
 
 
         }
@@ -534,6 +551,8 @@ class graphx {
             let light0 = light.find(i => i.getAttribute('type') != 'da')
             if (lightda) this.setFillColor(lightda, '#f00', nofresh)
             if (light0) this.setFillColor(light0, '#ff0', nofresh)
+            if (lightda) this.setStrokeColor(lightda, '#f00', nofresh)
+            if (light0) this.setStrokeColor(light0, '#ff0', nofresh)
         }
 
         if (status.green_twice) {
@@ -687,7 +706,7 @@ window.graphAction = {
             }
             console.log(Math.floor(15000 - (Date.now() - this.startTime)))
             $('#countingdown').html('操作剩余时间：<span style="color:red">' + Math.ceil((15000 - (Date.now() - this.startTime)) / 1000) + 's</span>')
-        }, 1000);
+        }, 100);
         setTimeout(i => {
             if (this.actionMark != actionMark) return
             this.resetStatus()
@@ -1495,9 +1514,67 @@ struct IndicatorLightStatus {
         }
 
         if (state.data.control_status == 0x55) {
+          
+            //自律控制绿色
+            //非常站控灭灯
+            //获取零件
+            let nc = new graphx()
+            let cell = parkequip['自律控制']
+            let light = cell.getSubCell('light')
+
+            let lighto
+            if (light && light.length > 0) {
+                lighto = light[0]
+            } else {
+                lighto = cell
+            }
+            nc.setFillColor(lighto, '#0f0')
+
+            if (1) {
+                let cell = parkequip['非常站控']
+                let light = cell.getSubCell('light')
+
+                let lighto
+                if (light && light.length > 0) {
+                    lighto = light[0]
+                } else {
+                    lighto = cell
+                }
+                nc.setFillColor(lighto, '#000')
+            }
+
+
 
 
         } else if (state.data.control_status == 0xaa) {
+
+            //自律控制灭灯
+            //非常站控红灯
+            let nc = new graphx()
+            let cell = parkequip['自律控制']
+            let light = cell.getSubCell('light')
+
+            let lighto
+            if (light && light.length > 0) {
+                lighto = light[0]
+            } else {
+                lighto = cell
+            }
+            nc.setFillColor(lighto, '#000')
+
+            if (1) {
+                let cell = parkequip['非常站控']
+                let light = cell.getSubCell('light')
+
+                let lighto
+                if (light && light.length > 0) {
+                    lighto = light[0]
+                } else {
+                    lighto = cell
+                }
+                nc.setFillColor(lighto, '#f00')
+            }
+
 
         }
 
@@ -1649,9 +1726,14 @@ mxUtils.getAll([bundle, STYLE_PATH + '/default.xml', defualtxmldoc], function (x
     for (let i in window.graph.getModel().cells) {
         let cell = window.graph.getModel().cells[i]
 
+        //隐藏train的图例
+        if (cell.getAttribute('type') == 'train') {
+            origintrain = cell
+            cell.setVisible(0)
+        }
 
         //给灯加一个底圈
-        if (cell.getAttribute('name') == 'light') {
+        if (cell.getAttribute('name') == 'light' && (cell.getAttribute('type') == 'da' || cell.getAttribute('type') == 'la' || cell.getAttribute('type') == 'ya')) {
 
 
             let referenceposition = cell.geometry,
@@ -1661,11 +1743,6 @@ mxUtils.getAll([bundle, STYLE_PATH + '/default.xml', defualtxmldoc], function (x
 
         }
 
-        //隐藏train的图例
-        if (cell.getAttribute('type') == 'train') {
-            origintrain = cell
-            cell.setVisible(0)
-        }
 
         //处理道岔
         if (cell.getAttribute('type') == 'ca') {
@@ -1710,8 +1787,8 @@ mxUtils.getAll([bundle, STYLE_PATH + '/default.xml', defualtxmldoc], function (x
                 }
             }
 
-            if(cell.getAttribute('uid') == 16){
-                console.log(upon,rightward,angle)
+            if (cell.getAttribute('uid') == 16) {
+                console.log(upon, rightward, angle)
             }
 
 
@@ -1722,9 +1799,9 @@ mxUtils.getAll([bundle, STYLE_PATH + '/default.xml', defualtxmldoc], function (x
             boundaryvalue.setAttribute('name', 'boundary')
             let newboundary
             if (!rightward) {
-                 newboundary = this.graph.insertVertex(cell, null, '', referenceposition.x - 15 + referenceposition.width, referenceposition.y - 9, 23, 23, "shape=ellipse;whiteSpace=wrap;html=1;aspect=fixed;strokeColor=red;fillColor=none;cursor=pointer;");
+                newboundary = this.graph.insertVertex(cell, null, '', referenceposition.x - 15 + referenceposition.width, referenceposition.y - 9, 23, 23, "shape=ellipse;whiteSpace=wrap;html=1;aspect=fixed;strokeColor=red;fillColor=none;cursor=pointer;");
             } else {
-                 newboundary = this.graph.insertVertex(cell, null, '', referenceposition.x - 6, referenceposition.y - 9, 23, 23, "shape=ellipse;whiteSpace=wrap;html=1;aspect=fixed;strokeColor=red;fillColor=none;cursor=pointer;");
+                newboundary = this.graph.insertVertex(cell, null, '', referenceposition.x - 6, referenceposition.y - 9, 23, 23, "shape=ellipse;whiteSpace=wrap;html=1;aspect=fixed;strokeColor=red;fillColor=none;cursor=pointer;");
             }
             newboundary.value = boundaryvalue
             newboundary.specialname = 'lock'
@@ -1881,6 +1958,8 @@ mxUtils.getAll([bundle, STYLE_PATH + '/default.xml', defualtxmldoc], function (x
     mxUtils.makeDraggable(document.querySelector('#dragicons img'), window.graph, dragcallback, document.querySelector('#dragicons img').cloneNode(), -15, -15, false, false, true);
 
 
+    //测试数据
+
 
 }, function () {
     document.body.innerHTML =
@@ -1911,7 +1990,7 @@ $('.ui-keyboard-input').bind('visible hidden beforeClose accepted canceled restr
             break;
         case 'accepted':
             //把点击按钮和部件发送给graphAction处理
-            if (window.ikeyboard.getValue()) {
+            if (window.ikeyboard.getValue() == '123') {
 
                 switch (window.graphAction.status) {
                     case 3:

@@ -11,8 +11,19 @@
     border-top: 2px solid white;
     border-right: 2px solid gray;
 	border-bottom: 2px solid gray;
-	background:yellowgreen;
+	background:#ffff57;
 }
+
+#graphactionbtn button#nofocus:focus{
+	border-right: 2px solid white;
+    border-bottom: 2px solid white;
+    border-left: 2px solid gray;
+	border-top: 2px solid gray;
+	background:#dddddd;
+	outline: none;
+}
+
+
 #graphactionbtn button{
     width: 50px;
     height: 30px;
