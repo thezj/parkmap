@@ -104,10 +104,10 @@ class graphx {
          * 
          */
 
-        
+
 
         if (status.preline_blue_belt) {
-            let a = [roadentrance,roadreverse, roaddirect]
+            let a = [roadentrance, roadreverse, roaddirect]
             a.map(ip => {
                 ip.map(i => {
                     this.setFillColor(i, '#00f', nofresh)
@@ -782,6 +782,9 @@ window.graphAction = {
                 this.status = 0XB5
                 this.clickPath.push(0x02)
                 break
+            case 17:
+                this.status = 0X3A
+                break
         }
 
         let copy = JSON.parse(JSON.stringify({
@@ -823,7 +826,19 @@ window.graphAction = {
 
             //始端列车按钮（LA）
             if (button && button.type && button.type == 'la') {
-                console.log('点击始端列车按钮:', equip.uid)
+                console.log('点击始端列车按钮:')
+
+
+                //单击非正常关闭信号机
+                if (equip.cell.equipstatus.notice == 21) {
+                    this.status = 17
+                    this.clickPath.push({
+                        index: Number(button.uindex),
+                        name: equip.cell.equipstatus.name
+                    })
+                    this.commitAction()
+                    return
+                }
 
                 document.querySelector('#signalname').innerHTML = ('始列' + equip.cell.equipstatus.name)
 
@@ -839,6 +854,18 @@ window.graphAction = {
             //始端调车按钮（DA）
             if (button && button.type && button.type == 'da') {
                 console.log('点击始端调车按钮:', equip.uid)
+
+                //单击非正常关闭信号机
+                if (equip.cell.equipstatus.notice == 21) {
+                    this.status = 17
+                    this.clickPath.push({
+                        index: Number(button.uindex),
+                        name: equip.cell.equipstatus.name
+                    })
+                    this.commitAction()
+                    return
+                }
+
                 document.querySelector('#signalname').innerHTML = ('始调' + equip.cell.equipstatus.name)
                 this.clickPath.push({
                     index: Number(button.uindex),
@@ -1067,85 +1094,6 @@ window.graphAction = {
                     return
                 }
             }
-
-            // return
-
-            // if (button.type == 'da') {
-            //     //进路人解
-            //     this.status = 12
-            //     if (button && button.type && (button.type == 'la' || button.type == 'da')) {
-            //         console.log('总人解+列车/调车始端按钮:', equip.uid)
-
-            //         this.clickPath.push({
-            //             index: Number(button.uindex),
-            //             name: equip.cell.equipstatus.name
-            //         })
-            //         this.commitAction()
-            //         return
-            //     }
-            // }
-
-            // if (button.type == 'ya') {
-            //     //取消引导进路
-            //     this.status = 5
-            //     if (button && button.type && (button.type == 'la' || button.type == 'ya')) {
-            //         console.log('总人解+引导信号机始端按钮:', equip.uid)
-
-            //         this.clickPath.push({
-            //             index: Number(button.uindex),
-            //             name: equip.cell.equipstatus.name
-            //         })
-            //         this.commitAction()
-            //         return
-            //     }
-            // }
-
-
-
-            // if (button.type == 'la') {
-            //     let type5 = false
-            //     equip.cell.getSubCell('button').map(x => {
-            //         if (x.getAttribute('type') == 'ya') {
-
-            //             type5 = true
-
-            //         }
-            //     })
-
-            //     if (type5) {
-            //         //取消引导进路
-            //         this.status = 5
-            //         if (button && button.type && (button.type == 'la' || button.type == 'ya')) {
-            //             console.log('总人解+引导信号机始端按钮:', equip.uid)
-
-            //             this.clickPath.push({
-            //                 index: Number(button.uindex),
-            //                 name: equip.cell.equipstatus.name
-            //             })
-            //             this.commitAction()
-            //             return
-            //         }
-            //     } else {
-
-            //         //进路人解
-            //         this.status = 12
-            //         if (button && button.type && (button.type == 'la' || button.type == 'da')) {
-            //             console.log('总人解+列车/调车始端按钮:', equip.uid)
-
-            //             this.clickPath.push({
-            //                 index: Number(button.uindex),
-            //                 name: equip.cell.equipstatus.name
-            //             })
-            //             this.commitAction()
-            //             return
-            //         }
-            //     }
-
-            // }
-
-
-
-
 
         }
         //道岔总定
@@ -1514,7 +1462,7 @@ struct IndicatorLightStatus {
         }
 
         if (state.data.control_status == 0x55) {
-          
+
             //自律控制绿色
             //非常站控灭灯
             //获取零件
@@ -1634,25 +1582,31 @@ mxConstants.HIGHLIGHT_OPACITY = 70
  * 
  */
 //道岔对应区段的json文件
-$.ajax({
-    url: "/stationswitchbelongsector.json",
-    type: "GET",
-    dataType: "json",
-    success: function (data) {
-        window.switchbelongsector = data
-    }
-})
-//战场图的xml
-window.defualtxmldoc = 'station.xml'
-//按钮表
-$.ajax({
-    url: "/mapbuttonindex.json",
-    type: "GET",
-    dataType: "json",
-    success: function (data) {
-        window.equipindex = data
-    }
-})
+
+let loadmap = mapname => {
+    $.ajax({
+        url: `/${mapname}/stationswitchbelongsector.json`,
+        type: "GET",
+        dataType: "json",
+        success: function (data) {
+            window.switchbelongsector = data
+        }
+    })
+    //战场图的xml
+    window.defualtxmldoc = `/${mapname}/station.xml`
+    //按钮表
+    $.ajax({
+        url: `/${mapname}/mapbuttonindex.json`,
+        type: "GET",
+        dataType: "json",
+        success: function (data) {
+            window.equipindex = data
+        }
+    })
+
+}
+
+loadmap('gaodalu')
 
 /**
  * 
@@ -2024,7 +1978,7 @@ $('.ui-keyboard-input').bind('visible hidden beforeClose accepted canceled restr
     }
     $('#graphactionhidden').val('')
 });
-$('#graphactionbtn button').click(function () {
+$('#graphactionbtn button.actionlevelone').click(function () {
     switch ($(this).index()) {
         case 1:
             //引导总锁
@@ -2082,4 +2036,49 @@ $('#graphactionbtn button').click(function () {
 
 
     }
+})
+
+//辅助菜单js
+$('.assistmenulevel1').on('click', function () {
+    $('#graphactionbtnsub1').show()
+})
+$('.outassistmenu').on('click', function () {
+    $('#graphactionbtnsub1').hide()
+})
+
+
+$('.assistbut0').on('mouseenter', function () {
+    $('#graphactionbtnsub2').show()
+})
+$('.assistbut0').on('mouseleave', function () {
+    $('#graphactionbtnsub2').hide()
+})
+
+
+$('.assistbut01').on('mouseenter', function () {
+    $('#graphactionbtnsub2').show()
+    $('#graphactionbtnsub3').show()
+    $('#graphactionbtnsub4').hide()
+})
+
+$('.assistbut02').on('mouseenter', function () {
+    $('#graphactionbtnsub2').show()
+    $('#graphactionbtnsub3').hide()
+    $('#graphactionbtnsub4').show()
+
+})
+
+$('#graphactionbtnsub4').on('mouseleave', function () {
+    $('#graphactionbtnsub2').hide()
+})
+$('#graphactionbtnsub3').on('mouseleave', function () {
+    $('#graphactionbtnsub2').hide()
+})
+
+$('#graphactionbtnsub4').on('click', function () {
+    $('#graphactionbtnsub2').hide()
+    
+})
+$('#graphactionbtnsub3').on('click', function () {
+    $('#graphactionbtnsub2').hide()
 })

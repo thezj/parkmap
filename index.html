@@ -38,8 +38,8 @@
 
 
 
-	<div class="graphbody" style="height:100%; width:80%; position:absolute; overflow: hidden;">
-	<div class="covergraph"></div>
+	<div class="graphbody" style="height:100%; width:90%; position:absolute; overflow: hidden;">
+		<div class="covergraph"></div>
 		<!-- 固定窗口 -->
 
 		<!-- 左上角显示区域 -->
@@ -61,20 +61,43 @@
 		<!-- 操作按钮 -->
 		<div id="graphactionbtn" style="position:absolute; z-index: 2; left: 0; bottom:16px; width:100%; height:31px; ">
 			<input id="graphactionhidden" type="text" style="display:none;">
-			<button type="button" class="btn btn-light" style="color:red">场引导总锁</button>
-			<button type="button" class="btn btn-light">总取消</button>
-			<button type="button" class="btn btn-light" style="color:red">总人解</button>
-			<button type="button" class="btn btn-light" style="color:red">区故解</button>
-			<button type="button" class="btn btn-light">总定位</button>
-			<button type="button" class="btn btn-light">总反位</button>
-			<button type="button" class="btn btn-light" id="nofocus">清除</button>
-			<button type="button" class="btn btn-light">单锁</button>
-			<button type="button" class="btn btn-light">单解</button>
-			<button type="button" class="btn btn-light">按钮封锁</button>
-			<button type="button" class="btn btn-light">按钮解封</button>
-			<button type="button" class="btn btn-light">道岔封锁</button>
-			<button type="button" class="btn btn-light">道岔解封</button>
-			<button type="button" class="btn btn-light" id="nofocus">辅助菜单</button>
+			<button type="button" class="btn btn-light actionlevelone" style="color:red">场引导总锁</button>
+			<button type="button" class="btn btn-light actionlevelone">总取消</button>
+			<button type="button" class="btn btn-light actionlevelone" style="color:red">总人解</button>
+			<button type="button" class="btn btn-light actionlevelone" style="color:red">区故解</button>
+			<button type="button" class="btn btn-light actionlevelone">总定位</button>
+			<button type="button" class="btn btn-light actionlevelone">总反位</button>
+			<button type="button" class="btn btn-light actionlevelone" id="nofocus">清除</button>
+			<button type="button" class="btn btn-light actionlevelone">单锁</button>
+			<button type="button" class="btn btn-light actionlevelone">单解</button>
+			<button type="button" class="btn btn-light actionlevelone">按钮封锁</button>
+			<button type="button" class="btn btn-light actionlevelone">按钮解封</button>
+			<button type="button" class="btn btn-light actionlevelone">道岔封锁</button>
+			<button type="button" class="btn btn-light actionlevelone">道岔解封</button>
+			<button type="button" class="btn btn-light actionlevelone assistmenulevel1" id="nofocus">辅助菜单</button>
+			<div id="graphactionbtnsub1" style='display: none;'>
+				<div id="graphactionbtnsub2"  style='display: none;'>
+					<button type="button" class="btn btn-light assistbut01" id="nofocus">按钮封锁1</button>
+					<button type="button" class="btn btn-light assistbut02" id="nofocus">按钮封锁2</button>
+					<div id="graphactionbtnsub3"  style='display: none;'>
+						<button type="button" class="btn btn-light" id="nofocus">按钮封锁11</button>
+						<button type="button" class="btn btn-light" id="nofocus">按钮封锁12</button>
+					</div>
+					<div id="graphactionbtnsub4"  style='display: none;'>
+						<button type="button" class="btn btn-light" id="nofocus">按钮封锁21</button>
+						<button type="button" class="btn btn-light" id="nofocus">按钮封锁22</button>
+					</div>
+				</div>
+				<button type="button" class="btn btn-light assistbut0" id="nofocus">按钮封锁0</button>
+				<button type="button" class="btn btn-light" id="nofocus">按钮封锁</button>
+				<button type="button" class="btn btn-light" id="nofocus">按钮封锁</button>
+				<button type="button" class="btn btn-light" id="nofocus">按钮封锁</button>
+				<button type="button" class="btn btn-light" id="nofocus">按钮封锁</button>
+				<button type="button" class="btn btn-light" id="nofocus">按钮封锁</button>
+				<button type="button" class="btn btn-light" id="nofocus">按钮封锁</button>
+				<button type="button" class="btn btn-light" id="nofocus">按钮封锁</button>
+				<button type="button" class="btn btn-light outassistmenu" id="nofocus">退出菜单</button>
+			</div>
 
 		</div>
 
@@ -94,32 +117,29 @@
 
 <script type="text/javascript" src="js/customfunc.js"></script>
 <script>
-
-    /*
-    * 页面加载完成通知后端
-    */
-    function document_load_ready(key) {
-        var def = $.Deferred();
-        if (window.cefQuery) {
-            window.cefQuery({
-                request: JSON.stringify({
-                    cmd: "load_finish"
-                }),
-                persistent: false,
-                onSuccess: function (response) {
-                    def.resolve(response)
-                },
-                onFailure: function (error_code, error_message) {
-                    def.reject(error_message)
-                }
-            })
-        } else {
-            def.reject('it in not in shell env')
-        }
-        return def
+	/*
+	 * 页面加载完成通知后端
+	 */
+	function document_load_ready(key) {
+		var def = $.Deferred();
+		if (window.cefQuery) {
+			window.cefQuery({
+				request: JSON.stringify({
+					cmd: "load_finish"
+				}),
+				persistent: false,
+				onSuccess: function (response) {
+					def.resolve(response)
+				},
+				onFailure: function (error_code, error_message) {
+					def.reject(error_message)
+				}
+			})
+		} else {
+			def.reject('it in not in shell env')
+		}
+		return def
 	}
-	
-
-
 </script>
+
 </html>

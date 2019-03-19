@@ -7,11 +7,12 @@
 	border: none;
 }
 #graphactionbtn button:focus{
-	border-left: 2px solid white;
-    border-top: 2px solid white;
-    border-right: 2px solid gray;
-	border-bottom: 2px solid gray;
+	border-right: 2px solid white;
+    border-bottom: 2px solid white;
+    border-left: 2px solid gray;
+	border-top: 2px solid gray;
 	background:#ffff57;
+	outline: none;
 }
 
 #graphactionbtn button#nofocus:focus{
@@ -23,9 +24,33 @@
 	outline: none;
 }
 
+#graphactionbtnsub1{
+	position: absolute;
+	left: 780px;
+	width: 60px;
+    bottom: 31px;
+}
 
+#graphactionbtnsub2{
+	position: absolute;
+	left: 60px;
+	width: 60px;
+    top: 0px;
+}
+#graphactionbtnsub3{
+	position: absolute;
+	left: 60px;
+	width: 60px;
+    top: 0px;
+}
+#graphactionbtnsub4{
+	position: absolute;
+	left: 60px;
+	width: 60px;
+    top: 0px;
+}
 #graphactionbtn button{
-    width: 50px;
+    width: 60px;
     height: 30px;
     padding: 0;
     line-height: 11px !important;
