@@ -263,6 +263,8 @@ class graphx {
          * 
          * 开始设置零件样式
          * 
+         * 
+         * 
          */
 
 
@@ -413,6 +415,7 @@ class graphx {
         window.globalintervalcell.delete(buttonla)
         window.globalintervalcell.delete(lightda)
         window.globalintervalcell.delete(light0)
+        window.globalintervalcell.delete(namelabel[0])
         this.showcell(buttonla)
         this.showcell(lightda)
         this.showcell(light0)
@@ -498,6 +501,32 @@ class graphx {
          * 
          * 开始设置零件样式
          * 
+         * / 信号状态
+        struct SignalStatus {
+    BYTE red_blue: 1;             // 红/兰
+    BYTE white : 1;               // 白灯
+    BYTE yellow : 1;              // 黄灯
+    BYTE yellow_twice : 1;        // 双黄
+    BYTE green_yellow : 1;        // 绿黄
+    BYTE green : 1;               // 绿灯
+    BYTE red_white : 1;           // 红白
+    BYTE green_twice : 1;         // 双绿
+
+    BYTE train_btn_flash : 1;     // 列车按钮闪亮
+    BYTE ligth_broken_wire : 1;   // 灯丝断丝
+    BYTE shunt_btn_light : 1;     // 调车按钮闪亮
+    BYTE flash : 1;               // 闪光
+    BYTE reversed : 1;            // 0
+    BYTE reversed2 : 1;           // 0
+    BYTE delay_180s : 1;          // 延时3分钟
+    BYTE delay_30s : 1;           // 延时30秒
+                                  
+    BYTE guaid_10s : 1;           // 引导10s
+    BYTE ramp_delay_lock : 1;     // 坡道延时解锁
+    BYTE closed : 1;              // 封闭
+    BYTE notice : 5;              // 提示信息
+};
+         * 
          */
 
         if (status.red_blue) {
@@ -505,7 +534,6 @@ class graphx {
             light.find(i => {
                 this.setFillColor(i, window['cellseparatecolor' + i.id], nofresh)
                 this.setStrokeColor(i, window['cellseparatecolor' + i.id], nofresh)
-
             })
 
         }
@@ -522,8 +550,11 @@ class graphx {
 
             let buttonla = button.find(i => i.getAttribute('type') == 'la')
             let light0 = light.find(i => i.getAttribute('type') != 'da')
+            let light1 = light.find(i => i.getAttribute('type') == 'da')
             if (buttonla) this.setFillColor(light0, '#ff0', nofresh)
             if (buttonla) this.setStrokeColor(light0, '#ff0', nofresh)
+            if (buttonla) this.setFillColor(light1, '#000', nofresh)
+            if (buttonla) this.setStrokeColor(light1, 'none', nofresh)
 
         }
 
@@ -537,10 +568,9 @@ class graphx {
 
         if (status.green) {
 
-            let buttonla = button.find(i => i.getAttribute('type') == 'la')
             let light0 = light.find(i => i.getAttribute('type') != 'da')
-            if (buttonla) this.setFillColor(light0, '#0f0', nofresh)
-            if (buttonla) this.setStrokeColor(light0, '#0f0', nofresh)
+         this.setFillColor(light0, '#0f0', nofresh)
+         this.setStrokeColor(light0, '#0f0', nofresh)
 
 
         }
@@ -572,8 +602,8 @@ class graphx {
         }
 
         if (status.shunt_btn_light) {
-            let lightda = light.find(i => i.getAttribute('type') == 'da')
-            if (lightda) window.globalintervalcell.add(lightda)
+            
+            window.globalintervalcell.add(namelabel[0])
         }
 
         if (status.flash) {
@@ -704,7 +734,7 @@ window.graphAction = {
                 $('#countingdown').html('空闲')
                 return
             }
-            console.log(Math.floor(15000 - (Date.now() - this.startTime)))
+            // console.log(Math.floor(15000 - (Date.now() - this.startTime)))
             $('#countingdown').html('操作剩余时间：<span style="color:red">' + Math.ceil((15000 - (Date.now() - this.startTime)) / 1000) + 's</span>')
         }, 100);
         setTimeout(i => {
@@ -830,15 +860,15 @@ window.graphAction = {
 
 
                 //单击非正常关闭信号机
-                if (equip.cell.equipstatus.notice == 21) {
-                    this.status = 17
-                    this.clickPath.push({
-                        index: Number(button.uindex),
-                        name: equip.cell.equipstatus.name
-                    })
-                    this.commitAction()
-                    return
-                }
+                // if (equip.cell.equipstatus.notice == 21) {
+                //     this.status = 17
+                //     this.clickPath.push({
+                //         index: Number(button.uindex),
+                //         name: equip.cell.equipstatus.name
+                //     })
+                //     this.commitAction()
+                //     return
+                // }
 
                 document.querySelector('#signalname').innerHTML = ('始列' + equip.cell.equipstatus.name)
 
@@ -856,15 +886,15 @@ window.graphAction = {
                 console.log('点击始端调车按钮:', equip.uid)
 
                 //单击非正常关闭信号机
-                if (equip.cell.equipstatus.notice == 21) {
-                    this.status = 17
-                    this.clickPath.push({
-                        index: Number(button.uindex),
-                        name: equip.cell.equipstatus.name
-                    })
-                    this.commitAction()
-                    return
-                }
+                // if (equip.cell.equipstatus.notice == 21) {
+                //     this.status = 17
+                //     this.clickPath.push({
+                //         index: Number(button.uindex),
+                //         name: equip.cell.equipstatus.name
+                //     })
+                //     this.commitAction()
+                //     return
+                // }
 
                 document.querySelector('#signalname').innerHTML = ('始调' + equip.cell.equipstatus.name)
                 this.clickPath.push({
@@ -1687,14 +1717,10 @@ mxUtils.getAll([bundle, STYLE_PATH + '/default.xml', defualtxmldoc], function (x
         }
 
         //给灯加一个底圈
-        if (cell.getAttribute('name') == 'light' && (cell.getAttribute('type') == 'da' || cell.getAttribute('type') == 'la' || cell.getAttribute('type') == 'ya')) {
-
-
+        if (cell.getAttribute('name') == 'light' && /^[^\u4e00-\u9fa5]+$/.test(getCellUid(cell))) {
             let referenceposition = cell.geometry,
                 newboundary = this.graph.insertVertex(cell.parent, null, '', referenceposition.x, referenceposition.y, 19, 19, "shape=ellipse;whiteSpace=wrap;html=1;aspect=fixed;strokeColor=#3694FF;fillColor=none;cursor=pointer;");
             window.graph.orderCells(1, [newboundary])
-
-
         }
 
 
