@@ -305,11 +305,11 @@ class graphx {
 
         //不在graph上的dom控制
 
-        if (uid == '场引导总锁闭BTN') {
+        if (uid == '场引导总锁BTN') {
 
             if (status.light) {
                 $($('#graphactionbtn button')[0]).css({
-                    background: "yellowgreen"
+                    background: "#ffff57"
                 })
             } else {
                 $($('#graphactionbtn button')[0]).attr('style', '')
@@ -416,6 +416,7 @@ class graphx {
         window.globalintervalcell.delete(lightda)
         window.globalintervalcell.delete(light0)
         window.globalintervalcell.delete(namelabel[0])
+        this.showcell(namelabel[0])
         this.showcell(buttonla)
         this.showcell(lightda)
         this.showcell(light0)
@@ -569,8 +570,8 @@ class graphx {
         if (status.green) {
 
             let light0 = light.find(i => i.getAttribute('type') != 'da')
-         this.setFillColor(light0, '#0f0', nofresh)
-         this.setStrokeColor(light0, '#0f0', nofresh)
+            this.setFillColor(light0, '#0f0', nofresh)
+            this.setStrokeColor(light0, '#0f0', nofresh)
 
 
         }
@@ -602,7 +603,7 @@ class graphx {
         }
 
         if (status.shunt_btn_light) {
-            
+
             window.globalintervalcell.add(namelabel[0])
         }
 
@@ -703,7 +704,7 @@ class graphx {
 
 /**
  * 
- * graph操作相关的内容都放到graphAction对象
+ * 站场操作相关的内容都放到graphAction对象
  * 
  */
 
@@ -802,8 +803,14 @@ window.graphAction = {
                 this.status = 0x5A
                 break
             case 14:
-                this.status = 0xAA
+
+                // if ($($('#graphactionbtn button')[0]).attr('style').indexOf('back') > -1) {
+                //     this.status = 0x7B
+                // } else {
+                    this.status = 0x7A
+                // }
                 break
+
             case 15:
                 this.status = 0XB5
                 this.clickPath.push(0x01)
@@ -850,6 +857,35 @@ window.graphAction = {
     //按钮点击处理
     buttonClick(equip, button, e) {
 
+
+        // if (button && button.type && (button.type == 'la' || button.type == 'da')) {
+        //     if (!button.uindex) {
+        //         return
+        //     }
+
+        //     window.cefQuery({
+        //         request: JSON.stringify({
+        //             cmd: "commit_action",
+        //             data: {
+        //                 clickPath: [{
+        //                     index: Number(button.uindex),
+        //                     name: equip.cell.equipstatus.name
+        //                 }],
+        //                 status: 0x3A
+        //             }
+        //         }),
+        //         persistent: false,
+        //         onSuccess: function (response) {
+        //             // def.resolve(response)
+        //         },
+        //         onFailure: function (error_code, error_message) {
+        //             // def.reject(error_message)
+        //         }
+        //     })
+
+        // }
+
+
         //空闲时
         if (this.status == 0) {
 
@@ -857,6 +893,10 @@ window.graphAction = {
             //始端列车按钮（LA）
             if (button && button.type && button.type == 'la') {
                 console.log('点击始端列车按钮:')
+
+                if (!button.uindex) {
+                    return
+                }
 
 
                 //单击非正常关闭信号机
@@ -885,6 +925,9 @@ window.graphAction = {
             if (button && button.type && button.type == 'da') {
                 console.log('点击始端调车按钮:', equip.uid)
 
+                if (!button.uindex) {
+                    return
+                }
                 //单击非正常关闭信号机
                 // if (equip.cell.equipstatus.notice == 21) {
                 //     this.status = 17
@@ -909,6 +952,9 @@ window.graphAction = {
             if (button && button.type && button.type == 'ya') {
                 console.log('点击信号机引导按钮:', equip.uid)
 
+                if (!button.uindex) {
+                    return
+                }
                 this.clickPath.push({
                     index: Number(button.uindex),
                     name: equip.cell.equipstatus.name
@@ -1048,6 +1094,9 @@ window.graphAction = {
         //处理列车进路
         if (this.status == 1) {
             if (button && button.type && button.type == 'la' && equip.uid != this.clickPath[0]) {
+                if (!button.uindex) {
+                    return
+                }
                 console.log('点击终端列车按钮:', equip.uid)
                 document.querySelector('#signalname').innerHTML += ('——终列' + equip.cell.equipstatus.name)
                 this.clickPath.push({
@@ -1062,6 +1111,9 @@ window.graphAction = {
         //处理调车进路
         if (this.status == 2) {
             if (button && button.type && button.type == 'da' && equip.uid != this.clickPath[0]) {
+                if (!button.uindex) {
+                    return
+                }
                 console.log('点击终端调车按钮:', equip.uid)
                 document.querySelector('#signalname').innerHTML += ('——终调' + equip.cell.equipstatus.name)
                 this.clickPath.push({
@@ -1085,7 +1137,9 @@ window.graphAction = {
         if (this.status == 4) {
             if (button && button.type && (button.type == 'da' || button.type == 'la')) {
                 console.log('总取消+列车/调车始端按钮:', equip.uid)
-
+                if (!button.uindex) {
+                    return
+                }
                 this.clickPath.push({
                     index: Number(button.uindex),
                     name: equip.cell.equipstatus.name
@@ -1102,7 +1156,9 @@ window.graphAction = {
                 this.status = 5
                 if (button && button.type && (button.type == 'la' || button.type == 'ya')) {
                     console.log('总人解+引导信号机始端按钮:', equip.uid)
-
+                    if (!button.uindex) {
+                        return
+                    }
                     this.clickPath.push({
                         index: Number(button.uindex),
                         name: equip.cell.equipstatus.name
@@ -1115,7 +1171,9 @@ window.graphAction = {
                 this.status = 12
                 if (button && button.type && (button.type == 'la' || button.type == 'da')) {
                     console.log('总人解+列车/调车始端按钮:', equip.uid)
-
+                    if (!button.uindex) {
+                        return
+                    }
                     this.clickPath.push({
                         index: Number(button.uindex),
                         name: equip.cell.equipstatus.name
@@ -1230,7 +1288,9 @@ window.graphAction = {
         if (this.status == 15) {
             if (button && button.type && (button.type == 'da' || button.type == 'la')) {
                 console.log('按钮封闭:', equip.uid)
-
+                if (!button.uindex) {
+                    return
+                }
                 this.clickPath.push({
                     index: Number(button.uindex),
                     name: equip.cell.equipstatus.name
@@ -1243,7 +1303,9 @@ window.graphAction = {
         if (this.status == 16) {
             if (button && button.type && (button.type == 'da' || button.type == 'la')) {
                 console.log('按钮解封:', equip.uid)
-
+                if (!button.uindex) {
+                    return
+                }
                 this.clickPath.push({
                     index: Number(button.uindex),
                     name: equip.cell.equipstatus.name
@@ -1267,7 +1329,6 @@ window.graphAction = {
 
 //存放道岔和区段的对应关系
 
-window.switchbelongsector = {}
 
 /**
  * 
@@ -1282,10 +1343,12 @@ window.globalinterval = setInterval(() => {
 
     for (let cell of globalintervalcell) {
         cell.visible = !cell.visible
-        this.graph.refresh(cell)
+        setTimeout(x => {
+            this.graph.refresh(cell)
+        }, 30)
     }
 
-}, 1000);
+}, 1500);
 
 
 
@@ -1645,25 +1708,19 @@ loadmap('gaodalu')
  */
 
 var editorUiInit = EditorUi.prototype.init;
-
 EditorUi.prototype.init = function () {
     editorUiInit.apply(this, arguments);
     this.actions.get('export').setEnabled(false);
 };
-
 // Adds required resources (disables loading of fallback properties, this can only
 // be used if we know that all keys are defined in the language specific file)
 mxResources.loadDefaultBundle = false;
 var bundle = mxResources.getDefaultBundle(RESOURCE_BASE, mxLanguage) ||
     mxResources.getSpecialBundle(RESOURCE_BASE, mxLanguage);
-
-
-
 // Fixes possible asynchronous requests
 mxUtils.getAll([bundle, STYLE_PATH + '/default.xml', defualtxmldoc], function (xhr) {
     // Adds bundle text to resources
     mxResources.parse(xhr[0].getText());
-
     // Configures the default graph theme
     var themes = new Object();
     themes[Graph.prototype.defaultThemeName] = xhr[1].getDocumentElement();
@@ -1678,9 +1735,7 @@ mxUtils.getAll([bundle, STYLE_PATH + '/default.xml', defualtxmldoc], function (x
 
 
     window.equipcellindex = {}
-
     window.graph.importGraphModel(xhr[2].getDocumentElement())
-
     window.graph.setCellsSelectable(false)
     // window.graph.setCellsMovable(false)
     window.graph.setCellsEditable(false)
@@ -1719,8 +1774,16 @@ mxUtils.getAll([bundle, STYLE_PATH + '/default.xml', defualtxmldoc], function (x
         //给灯加一个底圈
         if (cell.getAttribute('name') == 'light' && /^[^\u4e00-\u9fa5]+$/.test(getCellUid(cell))) {
             let referenceposition = cell.geometry,
-                newboundary = this.graph.insertVertex(cell.parent, null, '', referenceposition.x, referenceposition.y, 19, 19, "shape=ellipse;whiteSpace=wrap;html=1;aspect=fixed;strokeColor=#3694FF;fillColor=none;cursor=pointer;");
+                newboundary = this.graph.insertVertex(cell.parent, null, '', referenceposition.x, referenceposition.y, 19, 19, "shape=ellipse;whiteSpace=wrap;html=1;aspect=fixed;strokeColor=#3694FF;fillColor=black;cursor=pointer;");
             window.graph.orderCells(1, [newboundary])
+
+            if (getEquipCell(cell)) {
+                getEquipCell(cell).children.map(c => {
+                    if (c.geometry.width == 6) {
+                        window.graph.orderCells(1, [c])
+                    }
+                })
+            }
         }
 
 
@@ -1802,7 +1865,7 @@ mxUtils.getAll([bundle, STYLE_PATH + '/default.xml', defualtxmldoc], function (x
 
 
 
-
+            //把cell按钮的cellid 和 按钮表的index 对应起来 放到equipcellindex中
             equipindex.map(s => {
 
 
@@ -1834,6 +1897,7 @@ mxUtils.getAll([bundle, STYLE_PATH + '/default.xml', defualtxmldoc], function (x
 
         }
 
+        //默认隐藏有叉区段的名称lable
         if (cell.getAttribute('belongsector') && !cell.children) {
             cell.setAttribute('label', cell.getAttribute('belongsector').toUpperCase())
             window.parkequip[cell.getAttribute('belongsector')] = cell
@@ -1866,6 +1930,9 @@ mxUtils.getAll([bundle, STYLE_PATH + '/default.xml', defualtxmldoc], function (x
 
                 if (getCellUid(evt.sourceState.cell)) {
                     //把点击按钮和部件发送给graphAction处理
+
+
+
                     window.graphAction.buttonClick({
                         cell: getEquipCell(evt.sourceState.cell),
                         type: getEquipCell(evt.sourceState.cell).getAttribute('type')
@@ -1937,14 +2004,16 @@ mxUtils.getAll([bundle, STYLE_PATH + '/default.xml', defualtxmldoc], function (x
 
     mxUtils.makeDraggable(document.querySelector('#dragicons img'), window.graph, dragcallback, document.querySelector('#dragicons img').cloneNode(), -15, -15, false, false, true);
 
-
-    //测试数据
-
-
-}, function () {
+  }, function () {
     document.body.innerHTML =
         '<center style="margin-top:10%;">Error loading resource files. Please check browser console.</center>';
 });
+
+
+
+
+
+
 
 
 //keyboard插件初始化
@@ -2004,6 +2073,7 @@ $('.ui-keyboard-input').bind('visible hidden beforeClose accepted canceled restr
     }
     $('#graphactionhidden').val('')
 });
+//底部功能按钮事件处理
 $('#graphactionbtn button.actionlevelone').click(function () {
     switch ($(this).index()) {
         case 1:
@@ -2103,7 +2173,7 @@ $('#graphactionbtnsub3').on('mouseleave', function () {
 
 $('#graphactionbtnsub4').on('click', function () {
     $('#graphactionbtnsub2').hide()
-    
+
 })
 $('#graphactionbtnsub3').on('click', function () {
     $('#graphactionbtnsub2').hide()

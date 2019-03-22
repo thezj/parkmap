@@ -2410,6 +2410,7 @@ mxGraph.prototype.startEditing = function(evt)
  */
 mxGraph.prototype.startEditingAtCell = function(cell, evt)
 {
+	console.log(1)
 	if (evt == null || !mxEvent.isMultiTouchEvent(evt))
 	{
 		if (cell == null)
