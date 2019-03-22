@@ -807,7 +807,7 @@ window.graphAction = {
                 // if ($($('#graphactionbtn button')[0]).attr('style').indexOf('back') > -1) {
                 //     this.status = 0x7B
                 // } else {
-                    this.status = 0x7A
+                this.status = 0x7A
                 // }
                 break
 
@@ -1337,7 +1337,7 @@ window.graphAction = {
  */
 window.globalintervalcell = new Set()
 window.globalinterval = setInterval(() => {
-    if (window.globalupdata) {
+    if (window.globalupdata || globalintervalcell.size) {
         return
     }
 
@@ -2004,7 +2004,7 @@ mxUtils.getAll([bundle, STYLE_PATH + '/default.xml', defualtxmldoc], function (x
 
     mxUtils.makeDraggable(document.querySelector('#dragicons img'), window.graph, dragcallback, document.querySelector('#dragicons img').cloneNode(), -15, -15, false, false, true);
 
-  }, function () {
+}, function () {
     document.body.innerHTML =
         '<center style="margin-top:10%;">Error loading resource files. Please check browser console.</center>';
 });
