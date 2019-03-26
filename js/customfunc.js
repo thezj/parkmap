@@ -5,10 +5,13 @@
  * 
  */
 
-//原始图例
-let origintrain = null
 
 class graphx {
+
+    //所有原件的父级 graph.model.cells[1]
+
+
+
     constructor() {
         this.graph = window.graph
     }
@@ -18,43 +21,26 @@ class graphx {
         return window.parkequip[uid]
     }
 
-    //生成一个新的train
-    generatetrain(name) {
-        let train = window.graph.importCells([origintrain]),
-            namelabel = train[0].getSubCell('serial')[0]
-        this.setLabelText(namelabel, `<div style="color:#000;">${name}</div>`)
-        train[0].setVisible(1)
-        this.graph.refresh(train[0])
-        return train[0]
+    //生成一个新的div容器
+    generatetrain(id) {
+        let idiv = graph.insertVertex(graph.model.cells[1], null, parkequip[10].cloneValue(), 0, 0, 220, 30, "text;html=1;strokeColor=none;fillColor=none;align=center;verticalAlign=middle;whiteSpace=wrap;rounded=0;fontColor=#FFFFFF;");
+        this.setLabelText(idiv, `<div id="${id}"></div>`)
+        parkequip[id] = idiv
+    }
+    //修改div内容
+
+    setDivhtml(id, jhtmls) {
+        $('#' + id).append(jhtmls)
+        parkequip[id].setAttribute('label', $($('#ip2').parent()).html())
     }
 
+    //移动cell到某点 
+    /**
+     * cell的锚点设定为cell中心点
+    graph.translateCell(parkequip['ip2'],2852.4999999999995-parkequip['ip2'].geometry.x-parkequip['ip2'].geometry.width/2,696.5-parkequip['ip2'].geometry.y-parkequip['ip2'].geometry.height)
+     */
 
 
-
-    //计算股道的中心位置
-    calculateroadcenter(cell) {
-
-        let offset = {
-                x: this.graph.view.getState(cell).origin.x,
-                y: this.graph.view.getState(cell).origin.y
-            },
-
-            x = offset.x + cell.geometry.width / 2,
-            y = offset.y + cell.geometry.height / 2
-        return {
-            x,
-            y
-        }
-
-    }
-
-    //移动cell的中心点到cell的中心的
-    movecelltocenter(s, t) {
-
-        let target = this.calculateroadcenter(t),
-            cells = this.graph.moveCells([s], target.x - (s.geometry.x + s.geometry.width / 2), target.y - (s.geometry.y + s.geometry.height / 2), false)
-        return cells[0]
-    }
 
     setTurnoutStatus(uid, status, nofresh) {
         let cell = this.getEquip(uid)
@@ -74,8 +60,7 @@ class graphx {
          * 初始化所有零件
          * 
          */
-        //初始化零件的闪烁状态为不闪烁
-        cell.twinkle = false
+
         //重置显示颜色
         let allparts = [reverse, direct, roadreverse, roaddirect, roadentrance]
         allparts.map(a => {
@@ -246,8 +231,7 @@ class graphx {
          * 初始化所有零件
          * 
          */
-        //初始化零件的闪烁状态为不闪烁
-        cell.twinkle = false
+
 
         //重置显示颜色
         let allparts = [road]
@@ -324,8 +308,7 @@ class graphx {
         //获取零件
         let light = cell.getSubCell('light')
 
-        //初始化零件的闪烁状态为不闪烁
-        cell.twinkle = false
+
 
         // BYTE light : 1;               // 亮灯
         // BYTE flash : 1;               // 闪灯
@@ -389,17 +372,16 @@ class graphx {
             button = cell.getSubCell('button'),
             namelabel = cell.getSubCell('label'),
             boundary = cell.getSubCell('boundary')
+        boundary = boundary.concat(cell.getSubCell('fork'))
 
         /**
          * 
          * 初始化所有零件
          * 
          */
-        //初始化零件的闪烁状态为不闪烁
-        cell.twinkle = false
+
         //重置显示颜色
         light.map(i => {
-            i.setVisible(1)
             if (!!i.getAttribute('defaultcolor') && !window['cellseparatecolor' + i.id]) {
                 window['cellseparatecolor' + i.id] = i.getAttribute('defaultcolor')
             }
@@ -428,8 +410,8 @@ class graphx {
             if (lightda) {
                 let referenceposition = lightda.geometry
                 let boundaryvalue = lightda.value.cloneNode(true)
-                boundaryvalue.setAttribute('name', 'boundary')
-                let newboundary = this.graph.insertVertex(cell, null, '', referenceposition.x + 3, referenceposition.y + 3, 14, 14, "shape=umlDestroy;whiteSpace=wrap;html=1;aspect=fixed;strokeColor=red;fillColor=none;cursor=pointer;");
+                boundaryvalue.setAttribute('name', 'fork')
+                let newboundary = this.graph.insertVertex(lightda.parent, null, '', referenceposition.x + 3, referenceposition.y + 3, 14, 14, "shape=umlDestroy;whiteSpace=wrap;html=1;aspect=fixed;strokeColor=red;fillColor=none;cursor=pointer;");
                 newboundary.value = boundaryvalue
                 boundary.push(newboundary)
             }
@@ -438,7 +420,7 @@ class graphx {
                 let referenceposition = lightda.geometry
                 let boundaryvalue = lightda.value.cloneNode(true)
                 boundaryvalue.setAttribute('name', 'boundary')
-                let newboundary = this.graph.insertVertex(cell, null, '', referenceposition.x, referenceposition.y, 19, 19, "whiteSpace=wrap;html=1;aspect=fixed;strokeColor=red;fillColor=none;cursor=pointer;");
+                let newboundary = this.graph.insertVertex(lightda.parent, null, '', referenceposition.x, referenceposition.y, 19, 19, "whiteSpace=wrap;html=1;aspect=fixed;strokeColor=red;fillColor=none;cursor=pointer;");
                 newboundary.value = boundaryvalue
                 newboundary.specialname = 'rect'
                 boundary.push(newboundary)
@@ -449,8 +431,8 @@ class graphx {
             if (lightda) {
                 let referenceposition = lightda.geometry
                 let boundaryvalue = lightda.value.cloneNode(true)
-                boundaryvalue.setAttribute('name', 'boundary')
-                let newboundary = this.graph.insertVertex(cell, null, '', referenceposition.x + 3, referenceposition.y + 3, 14, 14, "shape=umlDestroy;whiteSpace=wrap;html=1;aspect=fixed;strokeColor=red;fillColor=none;cursor=pointer;");
+                boundaryvalue.setAttribute('name', 'fork')
+                let newboundary = this.graph.insertVertex(lightda.parent, null, '', referenceposition.x + 3, referenceposition.y + 3, 14, 14, "shape=umlDestroy;whiteSpace=wrap;html=1;aspect=fixed;strokeColor=red;fillColor=none;cursor=pointer;");
                 newboundary.value = boundaryvalue
                 boundary.push(newboundary)
             }
@@ -459,7 +441,7 @@ class graphx {
                 let referenceposition = lightda.geometry
                 let boundaryvalue = lightda.value.cloneNode(true)
                 boundaryvalue.setAttribute('name', 'boundary')
-                let newboundary = this.graph.insertVertex(cell, null, '', referenceposition.x, referenceposition.y, 19, 19, "whiteSpace=wrap;html=1;aspect=fixed;strokeColor=red;fillColor=none;cursor=pointer;");
+                let newboundary = this.graph.insertVertex(lightda.parent, null, '', referenceposition.x, referenceposition.y, 19, 19, "whiteSpace=wrap;html=1;aspect=fixed;strokeColor=red;fillColor=none;cursor=pointer;");
                 newboundary.value = boundaryvalue
                 newboundary.specialname = 'rect'
                 boundary.push(newboundary)
@@ -471,8 +453,8 @@ class graphx {
             if (lightda) {
                 let referenceposition = lightda.geometry
                 let boundaryvalue = lightda.value.cloneNode(true)
-                boundaryvalue.setAttribute('name', 'boundary')
-                let newboundary = this.graph.insertVertex(cell, null, '', referenceposition.x, referenceposition.y, 14, 14, "shape=umlDestroy;whiteSpace=wrap;html=1;aspect=fixed;strokeColor=red;fillColor=none;cursor=pointer;");
+                boundaryvalue.setAttribute('name', 'fork')
+                let newboundary = this.graph.insertVertex(lightda.parent, null, '', referenceposition.x, referenceposition.y, 14, 14, "shape=umlDestroy;whiteSpace=wrap;html=1;aspect=fixed;strokeColor=red;fillColor=none;cursor=pointer;");
                 newboundary.value = boundaryvalue
                 boundary.push(newboundary)
             }
@@ -482,8 +464,8 @@ class graphx {
             if (lightda) {
                 let referenceposition = lightda.geometry
                 let boundaryvalue = lightda.value.cloneNode(true)
-                boundaryvalue.setAttribute('name', 'boundary')
-                let newboundary = this.graph.insertVertex(cell, null, '', referenceposition.x, referenceposition.y, 14, 14, "shape=umlDestroy;whiteSpace=wrap;html=1;aspect=fixed;strokeColor=red;fillColor=none;cursor=pointer;");
+                boundaryvalue.setAttribute('name', 'fork')
+                let newboundary = this.graph.insertVertex(lightda.parent, null, '', referenceposition.x, referenceposition.y, 14, 14, "shape=umlDestroy;whiteSpace=wrap;html=1;aspect=fixed;strokeColor=red;fillColor=none;cursor=pointer;");
                 newboundary.value = boundaryvalue
                 boundary.push(newboundary)
             }
@@ -494,6 +476,7 @@ class graphx {
         // 隐藏边框
         if (boundary.length) {
             boundary.map(i => {
+                this.setStrokeColor(i, 'red', nofresh)
                 i.setVisible(0)
             })
         }
@@ -503,6 +486,7 @@ class graphx {
          * 开始设置零件样式
          * 
          * / 信号状态
+         * 
         struct SignalStatus {
     BYTE red_blue: 1;             // 红/兰
     BYTE white : 1;               // 白灯
@@ -529,6 +513,63 @@ class graphx {
 };
          * 
          */
+
+        if (status.closed) {
+
+
+            let buttonla = button.find(i => i.getAttribute('type') == 'la')
+            if (buttonla) {
+                //有列车按钮就全部按钮红叉
+                boundary.map(i => {
+                    if (i.value.getAttribute('name') == 'fork' && (i.value.getAttribute('type') == 'la' || i.value.getAttribute('type') == 'ya')) {
+                        i.setVisible(1)
+                    }
+                })
+            } else {
+                //没有列车就就把车灯红框
+                boundary.map(i => {
+                    if (i.value.getAttribute('name') == 'boundary' && (i.value.getAttribute('type') == 'da' || !i.value.getAttribute('type'))) {
+                        i.setVisible(1)
+                    }
+                })
+            }
+
+
+        }
+
+        //信号机方框显示 0,1,2,3
+        switch (status.signal_square) {
+            case 0:
+                break
+            case 1:
+                //全部灯加白色框
+                boundary.map(i => {
+                    if (i.value.getAttribute('name') == 'boundary' && (i.value.getAttribute('type') == 'da' || !i.value.getAttribute('type'))) {
+                        i.setVisible(1)
+                        this.setStrokeColor(i, 'white', nofresh)
+                    }
+                })
+                break
+            case 2:
+                //全部灯加绿色框
+                boundary.map(i => {
+                    if (i.value.getAttribute('name') == 'boundary' && (i.value.getAttribute('type') == 'da' || !i.value.getAttribute('type'))) {
+                        i.setVisible(1)
+                        this.setStrokeColor(i, '#00ff00', nofresh)
+                    }
+                })
+                break
+            case 3:
+                //全部灯加黄色框
+                boundary.map(i => {
+                    if (i.value.getAttribute('name') == 'boundary' && (i.value.getAttribute('type') == 'da' || !i.value.getAttribute('type'))) {
+                        i.setVisible(1)
+                        this.setStrokeColor(i, '#ffff00', nofresh)
+                    }
+                })
+                break
+        }
+
 
         if (status.red_blue) {
 
@@ -611,16 +652,11 @@ class graphx {
 
         }
 
-        if (status.closed) {
-            boundary.map(i => {
-                if (i.specialname == 'rect') i.setVisible(1)
-            })
-        }
+
 
 
         if (!nofresh) {
             this.graph.refresh(cell)
-
             if (cell.children && cell.children.length) {
                 cell.children.map(c => {
                     if (window.graph.view.getState(c)) window.graph.view.getState(c).setCursor('pointer')
@@ -629,34 +665,7 @@ class graphx {
         }
     }
 
-
-
-
-
-    //设置零件闪烁fillcolor
-    flashcellcolor(cell, c1, c2) {
-        let randomkey = 'randomkey' + Math.floor(Math.random() * 10000000)
-        window[randomkey] = 0
-        let equip = window.getEquipCell(cell)
-        equip.twinkle = true
-        let func = i => {
-            if (equip.twinkle) {
-                if (window[randomkey]) {
-                    this.setFillColor(cell, c1, nofresh)
-                } else {
-                    this.setFillColor(cell, c2, nofresh)
-                }
-                window[randomkey] = !window[randomkey]
-                this.graph.refresh(cell)
-                setTimeout(func, 1500)
-            }
-        }
-        func()
-
-    }
-
     //换label的文字html
-    //this.setLabelText(namelabel,`<div style="background:red;color:white;">hahahha</div>`)
     setLabelText(cell, code, nofresh) {
         cell.value.setAttribute('label', code)
         if (!nofresh) {
@@ -1442,7 +1451,6 @@ struct IndicatorLightStatus {
             }
         })
         model.endUpdate();
-        window.graph.refresh()
         window.globalupdata = false
     }
     //处理故障
@@ -1764,12 +1772,6 @@ mxUtils.getAll([bundle, STYLE_PATH + '/default.xml', defualtxmldoc], function (x
 
     for (let i in window.graph.getModel().cells) {
         let cell = window.graph.getModel().cells[i]
-
-        //隐藏train的图例
-        if (cell.getAttribute('type') == 'train') {
-            origintrain = cell
-            cell.setVisible(0)
-        }
 
         //给灯加一个底圈
         if (cell.getAttribute('name') == 'light' && /^[^\u4e00-\u9fa5]+$/.test(getCellUid(cell))) {
