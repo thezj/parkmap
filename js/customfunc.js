@@ -1794,7 +1794,6 @@ mxUtils.getAll([bundle, STYLE_PATH + '/default.xml', defualtxmldoc], function (x
      * 
      * 
      */
-
     window.equipcellindex = {}
     window.graph.importGraphModel(xhr[2].getDocumentElement())
     window.graph.setCellsSelectable(false)
@@ -2056,40 +2055,144 @@ mxUtils.getAll([bundle, STYLE_PATH + '/default.xml', defualtxmldoc], function (x
 
     window.graph.center()
 
-    //添加拖拽图标
+
+
+    //添加拖拽图标的放下逻辑
 
     let dragcallback = function (graph, evt, cell, x, y) {
         if (!this.findtargetcell) return
-        console.log(window.getCellUid(this.findtargetcell))
-    }
+        let equipcell = window.getEquipCell(this.findtargetcell),
+            busytype = Number(this.element.dataset.type),
+            popid = 'random' + Math.round(Math.random() * 1000)
 
-    mxUtils.makeDraggable(document.querySelector('#dragicons img'), window.graph, dragcallback, document.querySelector('#dragicons img').cloneNode(), -15, -15, false, false, true);
+        //判断是否可以放下
+        if(!equipcell.value.getAttribute('type')){
+            return
+        }
+        let equiptype = equipcell.value.getAttribute('type').toLowerCase()
+        if (!['wc', 'gd'].includes(equiptype)) {
+            return
+        }
+
+        if (!equipcell.busytypes) {
+            equipcell.busytypes = {}
+        }
+        if (!equipcell.busytypes[busytype]) {
+            console.log('弹出框占线板', equipcell, busytype)
+            //确认放下的回调
+            callback = () => {
+                pop.close(popid)
+                if (equiptype == 'wc') {
+                    equipcell.busytypes[busytype] = true
+
+                    //放置图标到roadlabel上
+                    let doms = $(equipcell.getSubCell('road')[0].value.getAttribute('label'))
+                    if(doms.length == 0){
+                        doms = $(`<div class='trainvessel'></div>`)
+                    }
+                    doms.append($(`<img class='placedbusyicon busytype-${busytype}' style='width:30px; height:30px;' src="${this.element.src}" >`))
+
+                    equipcell.getSubCell('road')[0].value.setAttribute('label',`<div class='trainvessel'>${doms.html()}</div>`)
+                    graph.refresh(equipcell)
+                }
+            }
+
+            //把状态放到equip上
+
+            //弹出确认弹出框
+            switch (busytype) {
+                case 1:
+                    pop.confirm({
+                        title: "接触网送电",
+                        sizeAdapt: false,
+                        content: "请确定是否继续操作",
+                        button: [
+                            ["success", "确定",
+                                callback
+                            ],
+                            ["default", "取消",
+                                function (e) {
+                                    pop.close(e)
+                                }
+                            ]
+                        ],
+                        buttonSpcl: "",
+                        anim: "fadeIn-zoom",
+                        width: 350,
+                        height: 180,
+                        id: popid,
+                        place: 5,
+                        drag: true,
+                        index: true,
+                        toClose: false,
+                        mask: false,
+                        class: false
+                    });
+                    break
+                case 2:
+                    pop.confirm({
+                        title: "接触网断电",
+                        sizeAdapt: false,
+                        content: "请确定是否继续操作",
+                        button: [
+                            ["success", "确定",
+                                callback
+                            ],
+                            ["default", "取消",
+                                function (e) {
+                                    pop.close(e)
+                                }
+                            ]
+                        ],
+                        buttonSpcl: "",
+                        anim: "fadeIn-zoom",
+                        width: 350,
+                        height: 180,
+                        id: popid,
+                        place: 5,
+                        drag: true,
+                        index: true,
+                        toClose: false,
+                        mask: false,
+                        class: false
+                    });
+                    break
+            }
+        }
+
+
+
+
+    }
+    //占线板
+    mxUtils.makeDraggable(document.querySelector('#dragicons img:nth-child(1)'), window.graph, dragcallback, document.querySelector('#dragicons img:nth-child(1)').cloneNode(), -15, -15, false, false, true);
+    mxUtils.makeDraggable(document.querySelector('#dragicons img:nth-child(2)'), window.graph, dragcallback, document.querySelector('#dragicons img:nth-child(2)').cloneNode(), -15, -15, false, false, true);
 
     //模拟处理现车
-    setTimeout(x => {
-        set_globaltrain_state([{
-                type: 1, //类型,
-                name: 'as1232', //名称
-                position: '10AG', //位置’
-                status: 2, //状态
-                direction: 1 //方向
-            },
-            {
-                type: 1, //类型,
-                name: '1231', //名称
-                position: '8AG', //位置’
-                status: 1, //状态
-                direction: 0 //方向
-            },
-            {
-                type: 2, //类型,
-                name: '1233', //名称
-                position: '9AG', //位置’
-                status: 1, //状态
-                direction: 1 //方向
-            },
-        ])
-    }, 10)
+    // setTimeout(x => {
+    //     set_globaltrain_state([{
+    //             type: 1, //类型,
+    //             name: 'as1232', //名称
+    //             position: '10AG', //位置’
+    //             status: 2, //状态
+    //             direction: 1 //方向
+    //         },
+    //         {
+    //             type: 1, //类型,
+    //             name: '1231', //名称
+    //             position: '8AG', //位置’
+    //             status: 1, //状态
+    //             direction: 0 //方向
+    //         },
+    //         {
+    //             type: 2, //类型,
+    //             name: '1233', //名称
+    //             position: '9AG', //位置’
+    //             status: 1, //状态
+    //             direction: 1 //方向
+    //         },
+    //     ])
+    // }, 10)
 
 }, function () {
     document.body.innerHTML =
@@ -2228,11 +2331,6 @@ $('.assistmenulevel1').on('click', function () {
 $('.outassistmenu').on('click', function () {
     $('#graphactionbtnsub1').hide()
 })
-$('.assistbutshunttrain').on('click', function () {
-    $('.shunttrain').css({
-        'z-index': 999
-    })
-})
 
 
 $('.assistbut0').on('mouseenter', function () {
@@ -2241,6 +2339,8 @@ $('.assistbut0').on('mouseenter', function () {
 $('.assistbut0').on('mouseleave', function () {
     $('#graphactionbtnsub2').hide()
 })
+
+
 
 
 $('.assistbut01').on('mouseenter', function () {
@@ -2268,10 +2368,35 @@ $('#graphactionbtnsub4').on('click', function () {
 $('#graphactionbtnsub3').on('click', function () {
     $('#graphactionbtnsub2').hide()
 })
+$('.busywire').on('click', function () {
+    $('#dragicons').show()
+})
+$('.closebusyplane').on('click', function () {
+    $('#dragicons').hide()
+})
 
 
 
 //初始化vue
+$.ajax({
+    url: `http://172.16.109.91:9000/metro_park_dispatch/get_dispatch_plans/`,
+    type: "post",
+    dataType: "json",
+    success: function (data) {
+        console.log(data)
+        window.switchbelongsector = data
+    }
+})
+$('.assistbutshunttrain').on('click', function () {
+    //获取调车数据
+
+
+
+    $('.shunttrain').css({
+        'z-index': 999
+    })
+})
+
 let ishunttrainTdrag = setInterval(() => {
     if ($(".shunttrain").Tdrag) {
         $(".shunttrain").Tdrag();
@@ -2279,7 +2404,7 @@ let ishunttrainTdrag = setInterval(() => {
     }
 }, 100);
 
-window.shunttrain = new Vue({
+window.shunttrainvue = new Vue({
     el: '.shunttrain',
     data: {
         tableDatashunt: [{

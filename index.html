@@ -49,7 +49,7 @@
 		right: -1px;
 		top: 0px;
 		text-align: center;
-		color: white;
+		color: gray;
 		z-index: 3;" id="closeshunttrain">
 			X
 		</div>
@@ -86,10 +86,11 @@
 
 					<el-dropdown @command='shunt'>
 						<span class="el-dropdown-link">
-							下拉菜单<i class="el-icon-arrow-down el-icon--right"></i>
+							变更进路<i class="el-icon-arrow-down el-icon--right"></i>
 						</span>
 						<el-dropdown-menu slot="dropdown">
-							<el-dropdown-item :key='item' v-for='item in scope.row.routes' :command='{item,row:scope.row}'>{{item}}
+							<el-dropdown-item :key='item' v-for='item in scope.row.routes'
+								:command='{item,row:scope.row}'>{{item}}
 							</el-dropdown-item>
 						</el-dropdown-menu>
 					</el-dropdown>
@@ -128,10 +129,11 @@
 
 					<el-dropdown @command='shunt'>
 						<span class="el-dropdown-link">
-							下拉菜单<i class="el-icon-arrow-down el-icon--right"></i>
+							变更进路<i class="el-icon-arrow-down el-icon--right"></i>
 						</span>
 						<el-dropdown-menu slot="dropdown">
-							<el-dropdown-item :key='item' v-for='item in scope.row.routes' :command='{item,row:scope.row}'>{{item}}
+							<el-dropdown-item :key='item' v-for='item in scope.row.routes'
+								:command='{item,row:scope.row}'>{{item}}
 							</el-dropdown-item>
 						</el-dropdown-menu>
 					</el-dropdown>
@@ -194,6 +196,7 @@
 				<button type="button" class="btn btn-light assistbut0" id="nofocus">按钮封锁0</button>
 				<button type="button" class="btn btn-light" id="nofocus">按钮封锁</button>
 				<button type="button" class="btn btn-light assistbutshunttrain" id="nofocus">调车计划</button>
+				<button type="button" class="btn btn-light busywire" id="nofocus">占线板</button>
 				<button type="button" class="btn btn-light" id="nofocus">按钮封锁</button>
 				<button type="button" class="btn btn-light" id="nofocus">按钮封锁</button>
 				<button type="button" class="btn btn-light" id="nofocus">按钮封锁</button>
@@ -206,9 +209,39 @@
 		</div>
 
 
-		<div id="dragicons"
-			style="position:absolute; z-index: 2; left: 0; top:50%; width:30px; height:30px; display: none; ">
-			<img style='width:30px; height:30px;' src="./images/help.png" alt="" srcset="">
+		<div id="dragicons" style="position:absolute; z-index: 2; left: 0; top:50%; width:30px; display: none;">
+
+			<img data-type='1' style='width:30px; height:30px;' src="./images/holdwire/deny-round.png" alt="" srcset="">
+			<img data-type='2' style='width:30px; height:30px;' src="./images/holdwire/alert-round.png" alt=""
+				srcset="">
+				<div class="closebusyplane" style="
+				font-size: 14px;
+				color: white;
+				position: absolute;
+				left: 2px;
+				top: -35px;
+				height: 19px;
+				justify-content: center;
+				display: flex;
+				align-items: center;
+				width: 19px;
+				background: brown;
+				padding: 5px;
+				cursor: pointer;
+				border-radius: 50%;
+				">X</div>
+			<ul style="    position: absolute;
+			color: white;
+			width: 70px;
+			right: -74px;
+			font-size: 14px;
+			z-index: 0;
+			top: 0px;
+			list-style: none;
+			line-height: 32px;">
+				<li>接触网送电</li>
+				<li>接触网断电</li>
+			</ul>
 		</div>
 		<!-- 固定窗口 -->
 
