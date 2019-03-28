@@ -31,14 +31,116 @@
 	<script type="text/javascript" src="js/jquery-ui.min.js"></script>
 	<script type="text/javascript" src="js/jquery.mousewheel.js"></script>
 	<script type="text/javascript" src="js/jquery.keyboard.extension-typing.js"></script>
+	<script type="text/javascript" src="js/vue.js"></script>
+	<script type="text/javascript" src="js/eleindex.js"></script>
+	<script type="text/javascript" src="js/Tdrag.js"></script>
+	<script type="text/javascript" src="js/pop.min.js"></script>
+
 
 </head>
 
 <body>
 
+	<div class="shunttrainx"></div>
+	<div class="shunttrain">
+		<div style="    cursor: pointer;
+		position: absolute;
+		width: 20px;
+		right: -1px;
+		top: 0px;
+		text-align: center;
+		color: white;
+		z-index: 3;" id="closeshunttrain">
+			X
+		</div>
+		<h3>收发车计划：</h3>
 
+		<el-table size="small" style="border-top:1px solid #ddd;" :data="tableDatadepart" style="width: 100%"
+			max-height="265">
+			<el-table-column type="index" width="50">
+			</el-table-column>
+			<el-table-column prop="number" label="车号" width="80">
+			</el-table-column>
+			<el-table-column prop="begintime" label="计划开始时间" width="120">
+			</el-table-column>
+			<el-table-column prop="originsector" label="源始股道" width="120">
+			</el-table-column>
+			<el-table-column prop="goalsector" label="目标股道" width="120">
+			</el-table-column>
+			<el-table-column prop="instruct" label="进路指令" width="120">
+			</el-table-column>
+			<el-table-column prop="endtime" label="计划完成时间" width="120">
+			</el-table-column>
+			<el-table-column prop="type" label="类型" width="80">
+			</el-table-column>
+			<el-table-column prop="status" label="状态" width="80">
+			</el-table-column>
+			<el-table-column label="操作" width="220">
+				<template slot-scope="scope">
+					<el-button @click.native.prevent="arrange(scope)" type="text" size="small">
+						排列进路
+					</el-button>
+					<el-button @click.native.prevent="cancel(scope)" type="text" size="small">
+						取消执行
+					</el-button>
 
-	<div class="graphbody" style="height:100%; width:100%; position:absolute; overflow: hidden;">
+					<el-dropdown @command='shunt'>
+						<span class="el-dropdown-link">
+							下拉菜单<i class="el-icon-arrow-down el-icon--right"></i>
+						</span>
+						<el-dropdown-menu slot="dropdown">
+							<el-dropdown-item :key='item' v-for='item in scope.row.routes' :command='{item,row:scope.row}'>{{item}}
+							</el-dropdown-item>
+						</el-dropdown-menu>
+					</el-dropdown>
+				</template>
+			</el-table-column>
+		</el-table>
+		<h3>调车计划：</h3>
+		<el-table size="small" style="border-top:1px solid #ddd;" :data="tableDatashunt" style="width: 100%"
+			max-height="265">
+			<el-table-column type="index" width="50">
+			</el-table-column>
+			<el-table-column prop="number" label="车号" width="80">
+			</el-table-column>
+			<el-table-column prop="begintime" label="计划开始时间" width="120">
+			</el-table-column>
+			<el-table-column prop="originsector" label="源始股道" width="120">
+			</el-table-column>
+			<el-table-column prop="goalsector" label="目标股道" width="120">
+			</el-table-column>
+			<el-table-column prop="operation" label="作业内容" width="120">
+			</el-table-column>
+			<el-table-column prop="endtime" label="计划完成时间" width="120">
+			</el-table-column>
+			<el-table-column prop="instruct" label="进路指令" width="120">
+			</el-table-column>
+			<el-table-column prop="status" label="状态" width="120">
+			</el-table-column>
+			<el-table-column label="操作" width="220">
+				<template slot-scope="scope">
+					<el-button @click.native.prevent="arrange(scope)" type="text" size="small">
+						排列进路
+					</el-button>
+					<el-button @click.native.prevent="cancel(scope)" type="text" size="small">
+						取消执行
+					</el-button>
+
+					<el-dropdown @command='shunt'>
+						<span class="el-dropdown-link">
+							下拉菜单<i class="el-icon-arrow-down el-icon--right"></i>
+						</span>
+						<el-dropdown-menu slot="dropdown">
+							<el-dropdown-item :key='item' v-for='item in scope.row.routes' :command='{item,row:scope.row}'>{{item}}
+							</el-dropdown-item>
+						</el-dropdown-menu>
+					</el-dropdown>
+				</template>
+			</el-table-column>
+		</el-table>
+	</div>
+
+	<div class="graphbody" style="height:100%; width:100%; position:absolute; overflow: hidden;z-index: 2;">
 		<div class="covergraph"></div>
 		<!-- 固定窗口 -->
 
@@ -51,7 +153,8 @@
 
 
 		<!-- 底部显示区域 -->
-		<div style="overflow:hidden; display: flex;justify-content: space-between; line-height: 20px; font-size: 14px; font-weight: bold; height:16px; z-index: 2; width:100%; position:absolute; left:0;bottom:0;background:#eee;">
+		<div
+			style="overflow:hidden; display: flex;justify-content: space-between; line-height: 20px; font-size: 14px; font-weight: bold; height:16px; z-index: 2; width:100%; position:absolute; left:0;bottom:0;background:#eee;">
 			<div style="background:#ccc; padding: 0 10px;" id="signalname"> </div>
 			<div style=""> </div>
 			<div style="background:#ddd;" id="firnode"></div>
@@ -76,20 +179,21 @@
 			<button type="button" class="btn btn-light actionlevelone">道岔解封</button>
 			<button type="button" class="btn btn-light actionlevelone assistmenulevel1" id="nofocus">辅助菜单</button>
 			<div id="graphactionbtnsub1" style='display: none;'>
-				<div id="graphactionbtnsub2"  style='display: none;'>
+				<div id="graphactionbtnsub2" style='display: none;'>
 					<button type="button" class="btn btn-light assistbut01" id="nofocus">按钮封锁1</button>
 					<button type="button" class="btn btn-light assistbut02" id="nofocus">按钮封锁2</button>
-					<div id="graphactionbtnsub3"  style='display: none;'>
+					<div id="graphactionbtnsub3" style='display: none;'>
 						<button type="button" class="btn btn-light" id="nofocus">按钮封锁11</button>
 						<button type="button" class="btn btn-light" id="nofocus">按钮封锁12</button>
 					</div>
-					<div id="graphactionbtnsub4"  style='display: none;'>
+					<div id="graphactionbtnsub4" style='display: none;'>
 						<button type="button" class="btn btn-light" id="nofocus">按钮封锁21</button>
 						<button type="button" class="btn btn-light" id="nofocus">按钮封锁22</button>
 					</div>
 				</div>
 				<button type="button" class="btn btn-light assistbut0" id="nofocus">按钮封锁0</button>
 				<button type="button" class="btn btn-light" id="nofocus">按钮封锁</button>
+				<button type="button" class="btn btn-light assistbutshunttrain" id="nofocus">调车计划</button>
 				<button type="button" class="btn btn-light" id="nofocus">按钮封锁</button>
 				<button type="button" class="btn btn-light" id="nofocus">按钮封锁</button>
 				<button type="button" class="btn btn-light" id="nofocus">按钮封锁</button>
@@ -102,9 +206,9 @@
 		</div>
 
 
-		<div id="dragicons" style="position:absolute; z-index: 2; left: 0; top:50%; width:30px; height:30px; display: none; ">
-			<img style='width:30px; height:30px;' src="https://timgsa.baidu.com/timg?image&quality=80&size=b9999_10000&sec=1551520226&di=50f6b61d34de4558b2d166629cd83d8a&imgtype=jpg&er=1&src=http%3A%2F%2Fbpic.588ku.com%2Felement_origin_min_pic%2F01%2F37%2F60%2F66573c566af12c3.jpg"
-			 alt="" srcset="">
+		<div id="dragicons"
+			style="position:absolute; z-index: 2; left: 0; top:50%; width:30px; height:30px; display: none; ">
+			<img style='width:30px; height:30px;' src="./images/help.png" alt="" srcset="">
 		</div>
 		<!-- 固定窗口 -->
 

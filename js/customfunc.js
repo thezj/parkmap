@@ -8,10 +8,6 @@
 
 class graphx {
 
-    //所有原件的父级 graph.model.cells[1]
-
-
-
     constructor() {
         this.graph = window.graph
     }
@@ -24,22 +20,88 @@ class graphx {
     //生成一个新的div容器
     generatetrain(id) {
         let idiv = graph.insertVertex(graph.model.cells[1], null, parkequip[10].cloneValue(), 0, 0, 220, 30, "text;html=1;strokeColor=none;fillColor=none;align=center;verticalAlign=middle;whiteSpace=wrap;rounded=0;fontColor=#FFFFFF;");
-        this.setLabelText(idiv, `<div id="${id}"></div>`)
+        this.setLabelText(idiv, `<div class='trainvessel' id="${id}"></div>`)
         parkequip[id] = idiv
     }
     //修改div内容
 
     setDivhtml(id, jhtmls) {
         $('#' + id).append(jhtmls)
-        parkequip[id].setAttribute('label', $($('#ip2').parent()).html())
+        parkequip[id].setAttribute('label', $($('#' + id).parent()).html())
     }
 
     //移动cell到某点 
     /**
      * cell的锚点设定为cell中心点
-    graph.translateCell(parkequip['ip2'],2852.4999999999995-parkequip['ip2'].geometry.x-parkequip['ip2'].geometry.width/2,696.5-parkequip['ip2'].geometry.y-parkequip['ip2'].geometry.height)
      */
+    imovecell(id, position) {
+        //vessel
+        let target = parkequip[id]
 
+        let goal = parkequip[position],
+            GX, GY
+
+
+        if (switchbelongsector[position]) {
+
+            let longestroad
+            switchbelongsector[position].map(cauid => {
+                //根据占压和正反位来获取road
+                parkequip[cauid].getSubCell('road-reverse').map(road => {
+                    if (!longestroad || graph.view.getState(longestroad).cellBounds.width < graph.view.getState(road).cellBounds.width) {
+                        longestroad = road
+                    }
+                })
+            })
+
+            //放到岔区的被占压的road中最长的一个上
+            GX = graph.view.getState(longestroad).cellBounds.getCenterX()
+            GY = graph.view.getState(longestroad).cellBounds.getCenterY()
+        } else if (goal.value.getAttribute('type').toLowerCase() == 'wc' || goal.value.getAttribute('type').toLowerCase() == 'gd') {
+            let road = goal.getSubCell('road')[0]
+            GX = graph.view.getState(road).cellBounds.getCenterX()
+            GY = graph.view.getState(road).cellBounds.getCenterY()
+        }
+
+
+
+        graph.translateCell(target, GX - target.geometry.x - target.geometry.width / 2, GY - target.geometry.y - target.geometry.height)
+
+    }
+
+
+
+    setTrainStatus(alls, status, nofresh) {
+
+        //为每个车创建容器
+        let vesselid = 'V' + status.name
+        if (!document.querySelector('#' + vesselid)) {
+            console.log(vesselid)
+            this.generatetrain(vesselid)
+        }
+        //生成列车
+        let train = $(`<div class='trainbk' id='train${status.name}'>${status.name}</div>`)
+
+        //目标位置是否有车
+        let hasTrain = alls.find(x => {
+            if (document.querySelector('#train' + x.name) && x.name != status.name && x.position.toUpperCase() == status.position.toUpperCase()) {
+                return true
+            } else {
+                return false
+            }
+        })
+        if (hasTrain) {
+            //添加到目标位置的容器
+            console.log(status.name, '>>>>>>>>>', hasTrain.name)
+            this.setDivhtml('V' + hasTrain.name, train)
+        } else {
+            //添加列车到容器
+            this.setDivhtml(vesselid, train)
+            //移动容器到目标位置
+            this.imovecell(vesselid, status.position.toUpperCase())
+        }
+
+    }
 
 
     setTurnoutStatus(uid, status, nofresh) {
@@ -551,20 +613,20 @@ class graphx {
                 })
                 break
             case 2:
-                //全部灯加绿色框
-                boundary.map(i => {
-                    if (i.value.getAttribute('name') == 'boundary' && (i.value.getAttribute('type') == 'da' || !i.value.getAttribute('type'))) {
-                        i.setVisible(1)
-                        this.setStrokeColor(i, '#00ff00', nofresh)
-                    }
-                })
-                break
-            case 3:
                 //全部灯加黄色框
                 boundary.map(i => {
                     if (i.value.getAttribute('name') == 'boundary' && (i.value.getAttribute('type') == 'da' || !i.value.getAttribute('type'))) {
                         i.setVisible(1)
                         this.setStrokeColor(i, '#ffff00', nofresh)
+                    }
+                })
+                break
+            case 3:
+                //全部灯加绿色框
+                boundary.map(i => {
+                    if (i.value.getAttribute('name') == 'boundary' && (i.value.getAttribute('type') == 'da' || !i.value.getAttribute('type'))) {
+                        i.setVisible(1)
+                        this.setStrokeColor(i, '#00ff00', nofresh)
                     }
                 })
                 break
@@ -651,6 +713,7 @@ class graphx {
         if (status.flash) {
 
         }
+
 
 
 
@@ -866,35 +929,6 @@ window.graphAction = {
     //按钮点击处理
     buttonClick(equip, button, e) {
 
-
-        // if (button && button.type && (button.type == 'la' || button.type == 'da')) {
-        //     if (!button.uindex) {
-        //         return
-        //     }
-
-        //     window.cefQuery({
-        //         request: JSON.stringify({
-        //             cmd: "commit_action",
-        //             data: {
-        //                 clickPath: [{
-        //                     index: Number(button.uindex),
-        //                     name: equip.cell.equipstatus.name
-        //                 }],
-        //                 status: 0x3A
-        //             }
-        //         }),
-        //         persistent: false,
-        //         onSuccess: function (response) {
-        //             // def.resolve(response)
-        //         },
-        //         onFailure: function (error_code, error_message) {
-        //             // def.reject(error_message)
-        //         }
-        //     })
-
-        // }
-
-
         //空闲时
         if (this.status == 0) {
 
@@ -908,16 +942,29 @@ window.graphAction = {
                 }
 
 
-                //单击非正常关闭信号机
-                // if (equip.cell.equipstatus.notice == 21) {
-                //     this.status = 17
-                //     this.clickPath.push({
-                //         index: Number(button.uindex),
-                //         name: equip.cell.equipstatus.name
-                //     })
-                //     this.commitAction()
-                //     return
-                // }
+                if (equip.cell.equipstatus.signal_square == 2) {
+                    window.cefQuery({
+                        request: JSON.stringify({
+                            cmd: "commit_action",
+                            data: {
+                                clickPath: [{
+                                    index: Number(button.uindex),
+                                    name: equip.cell.equipstatus.name
+                                }],
+                                status: 0x3A
+                            }
+                        }),
+                        persistent: false,
+                        onSuccess: function (response) {
+                            // def.resolve(response)
+                        },
+                        onFailure: function (error_code, error_message) {
+                            // def.reject(error_message)
+                        }
+                    })
+                    return
+                }
+
 
                 document.querySelector('#signalname').innerHTML = ('始列' + equip.cell.equipstatus.name)
 
@@ -937,16 +984,29 @@ window.graphAction = {
                 if (!button.uindex) {
                     return
                 }
-                //单击非正常关闭信号机
-                // if (equip.cell.equipstatus.notice == 21) {
-                //     this.status = 17
-                //     this.clickPath.push({
-                //         index: Number(button.uindex),
-                //         name: equip.cell.equipstatus.name
-                //     })
-                //     this.commitAction()
-                //     return
-                // }
+
+                if (equip.cell.equipstatus.signal_square == 1) {
+                    window.cefQuery({
+                        request: JSON.stringify({
+                            cmd: "commit_action",
+                            data: {
+                                clickPath: [{
+                                    index: Number(button.uindex),
+                                    name: equip.cell.equipstatus.name
+                                }],
+                                status: 0x3A
+                            }
+                        }),
+                        persistent: false,
+                        onSuccess: function (response) {
+                            // def.resolve(response)
+                        },
+                        onFailure: function (error_code, error_message) {
+                            // def.reject(error_message)
+                        }
+                    })
+                    return
+                }
 
                 document.querySelector('#signalname').innerHTML = ('始调' + equip.cell.equipstatus.name)
                 this.clickPath.push({
@@ -960,10 +1020,10 @@ window.graphAction = {
             //信号机引导按钮(YA)
             if (button && button.type && button.type == 'ya') {
                 console.log('点击信号机引导按钮:', equip.uid)
-
                 if (!button.uindex) {
                     return
                 }
+
                 this.clickPath.push({
                     index: Number(button.uindex),
                     name: equip.cell.equipstatus.name
@@ -1009,8 +1069,6 @@ window.graphAction = {
                 this.startCounting()
                 return
             }
-
-
             //道岔单锁
             if (equip == 'switchlock') {
                 console.log('点击道岔单锁按钮')
@@ -1088,10 +1146,6 @@ window.graphAction = {
                 this.startCounting()
                 return
             }
-
-
-
-
         }
 
         /**
@@ -1336,14 +1390,14 @@ window.graphAction = {
 }
 
 
-//存放道岔和区段的对应关系
-
 
 /**
  * 
- * 设置全局闪烁
+ * 注册一些全局便利方法
  * 
  */
+
+//闪烁
 window.globalintervalcell = new Set()
 window.globalinterval = setInterval(() => {
     if (window.globalupdata || globalintervalcell.size) {
@@ -1359,16 +1413,46 @@ window.globalinterval = setInterval(() => {
 
 }, 1500);
 
+//获取cell
+window.getCellUid = cell => {
 
+    if (cell.getAttribute('uid')) {
+        return cell.getAttribute('uid')
+    } else {
+        if (cell.parent != null) {
+            return getCellUid(cell.parent)
+        } else {
+            return null
+        }
+    }
 
+}
+window.getEquipCell = cell => {
 
+    if (cell.getAttribute('uid')) {
+        return cell
+    } else {
+        if (cell.parent != null) {
+            return getEquipCell(cell.parent)
+        } else {
+            return null
+        }
+    }
 
-/**
- * 
- * 拓展一个cell的方法，遍历获取cell下级的cell,通过property的中的name获取
- * 
- * 
- */
+}
+window.getNamedCell = cell => {
+
+    if (cell.getAttribute('name')) {
+        return cell
+    } else {
+        if (cell.parent != null) {
+            return getNamedCell(cell.parent)
+        } else {
+            return null
+        }
+    }
+
+}
 
 mxCell.prototype.getSubCell = function (name) {
 
@@ -1391,11 +1475,6 @@ mxCell.prototype.getSubCell = function (name) {
 }
 
 
-/**
- * 
- * 注册一些全局便利方法
- * 
- */
 
 //设置全局状态
 
@@ -1450,6 +1529,7 @@ struct IndicatorLightStatus {
                     break
             }
         })
+        controlgraph.graph.refresh()
         model.endUpdate();
         window.globalupdata = false
     }
@@ -1630,58 +1710,30 @@ struct IndicatorLightStatus {
     }
 }
 
-//获取cell
-window.getCellUid = cell => {
-
-    if (cell.getAttribute('uid')) {
-        return cell.getAttribute('uid')
-    } else {
-        if (cell.parent != null) {
-            return getCellUid(cell.parent)
-        } else {
-            return null
-        }
-    }
-
-}
-window.getEquipCell = cell => {
-
-    if (cell.getAttribute('uid')) {
-        return cell
-    } else {
-        if (cell.parent != null) {
-            return getEquipCell(cell.parent)
-        } else {
-            return null
-        }
-    }
-
-}
-window.getNamedCell = cell => {
-
-    if (cell.getAttribute('name')) {
-        return cell
-    } else {
-        if (cell.parent != null) {
-            return getNamedCell(cell.parent)
-        } else {
-            return null
-        }
-    }
-
+//设置现车状态
+window.set_globaltrain_state = trainstate => {
+    console.log('全部现车状态初始化', trainstate)
+    //清空vessel
+    $('.trainvessel').html('')
+    let controlgraph = new graphx()
+    let model = controlgraph.graph.getModel()
+    model.beginUpdate();
+    trainstate.map((i, index) => {
+        controlgraph.setTrainStatus(trainstate, i, true)
+    })
+    model.endUpdate();
 }
 
 //存放全部部件细粒度到包含道岔 区段 和信号机 按钮
 window.parkequip = {}
-//配置mxConstants
-mxConstants.DROP_TARGET_COLOR = '#ff0'
-mxConstants.HIGHLIGHT_OPACITY = 70
 
 /**
  * 
  * 配置地图文件
  * 
  */
+
+
 //道岔对应区段的json文件
 
 let loadmap = mapname => {
@@ -1706,7 +1758,6 @@ let loadmap = mapname => {
     })
 
 }
-
 loadmap('gaodalu')
 
 /**
@@ -1714,6 +1765,9 @@ loadmap('gaodalu')
  * 开始初始化EditorUI
  * 
  */
+//配置mxConstants
+mxConstants.DROP_TARGET_COLOR = '#ff0'
+mxConstants.HIGHLIGHT_OPACITY = 70
 
 var editorUiInit = EditorUi.prototype.init;
 EditorUi.prototype.init = function () {
@@ -1740,7 +1794,6 @@ mxUtils.getAll([bundle, STYLE_PATH + '/default.xml', defualtxmldoc], function (x
      * 
      * 
      */
-
 
     window.equipcellindex = {}
     window.graph.importGraphModel(xhr[2].getDocumentElement())
@@ -1932,15 +1985,21 @@ mxUtils.getAll([bundle, STYLE_PATH + '/default.xml', defualtxmldoc], function (x
 
                 if (getCellUid(evt.sourceState.cell)) {
                     //把点击按钮和部件发送给graphAction处理
-
-
+                    let uindex = equipcellindex[evt.sourceState.cell.id] ? equipcellindex[evt.sourceState.cell.id] : equipcellindex[getEquipCell(evt.sourceState.cell).id]
+                    if (evt.sourceState.cell.value.getAttribute('name') == 'boundary') {
+                        getEquipCell(evt.sourceState.cell).getSubCell('light').map(l => {
+                            if (l.value.getAttribute('type').toUpperCase() == evt.sourceState.cell.value.getAttribute('type').toUpperCase()) {
+                                uindex = equipcellindex[l.id]
+                            }
+                        })
+                    }
 
                     window.graphAction.buttonClick({
                         cell: getEquipCell(evt.sourceState.cell),
                         type: getEquipCell(evt.sourceState.cell).getAttribute('type')
                     }, {
                         name: evt.sourceState.cell.getAttribute('name'),
-                        uindex: equipcellindex[evt.sourceState.cell.id] ? equipcellindex[evt.sourceState.cell.id] : equipcellindex[getEquipCell(evt.sourceState.cell).id],
+                        uindex,
                         type: evt.sourceState.cell.getAttribute('type')
                     }, evt.evt)
                 }
@@ -2005,6 +2064,32 @@ mxUtils.getAll([bundle, STYLE_PATH + '/default.xml', defualtxmldoc], function (x
     }
 
     mxUtils.makeDraggable(document.querySelector('#dragicons img'), window.graph, dragcallback, document.querySelector('#dragicons img').cloneNode(), -15, -15, false, false, true);
+
+    //模拟处理现车
+    setTimeout(x => {
+        set_globaltrain_state([{
+                type: 1, //类型,
+                name: 'as1232', //名称
+                position: '10AG', //位置’
+                status: 2, //状态
+                direction: 1 //方向
+            },
+            {
+                type: 1, //类型,
+                name: '1231', //名称
+                position: '8AG', //位置’
+                status: 1, //状态
+                direction: 0 //方向
+            },
+            {
+                type: 2, //类型,
+                name: '1233', //名称
+                position: '9AG', //位置’
+                status: 1, //状态
+                direction: 1 //方向
+            },
+        ])
+    }, 10)
 
 }, function () {
     document.body.innerHTML =
@@ -2143,6 +2228,11 @@ $('.assistmenulevel1').on('click', function () {
 $('.outassistmenu').on('click', function () {
     $('#graphactionbtnsub1').hide()
 })
+$('.assistbutshunttrain').on('click', function () {
+    $('.shunttrain').css({
+        'z-index': 999
+    })
+})
 
 
 $('.assistbut0').on('mouseenter', function () {
@@ -2172,11 +2262,110 @@ $('#graphactionbtnsub4').on('mouseleave', function () {
 $('#graphactionbtnsub3').on('mouseleave', function () {
     $('#graphactionbtnsub2').hide()
 })
-
 $('#graphactionbtnsub4').on('click', function () {
     $('#graphactionbtnsub2').hide()
-
 })
 $('#graphactionbtnsub3').on('click', function () {
     $('#graphactionbtnsub2').hide()
 })
+
+
+
+//初始化vue
+let ishunttrainTdrag = setInterval(() => {
+    if ($(".shunttrain").Tdrag) {
+        $(".shunttrain").Tdrag();
+        clearInterval(ishunttrainTdrag)
+    }
+}, 100);
+
+window.shunttrain = new Vue({
+    el: '.shunttrain',
+    data: {
+        tableDatashunt: [{
+            number: '10310',
+            begintime: '21:00:00',
+            originsector: '22A',
+            goalsector: '22B',
+            operation: '洗车',
+            endtime: '21:00:00',
+            instruct: 'D63-D64',
+            routes: ['D63-D14-X221', 'D63-D14-X222', 'D63-D14-X22'],
+            status: '待执行',
+        }],
+        tableDatadepart: [{
+            number: '10310',
+            begintime: '21:00:00',
+            originsector: '22A',
+            goalsector: '22B',
+            instruct: 'D63-D64',
+            endtime: '21:00:00',
+            routes: ['D63-D14-X122', 'D63-D14-X222', 'D63-D14-X22'],
+            type: '发车',
+            status: '待执行',
+        }]
+    },
+    methods: {
+        arrange(scope) {
+            console.log(scope.row)
+        },
+        cancel(scope) {
+            console.log(scope.row)
+        },
+        shunt(command) {
+            console.log(command)
+        }
+    },
+})
+
+//调车弹出层
+//pop的倒计时确认
+window.popShuntTrain = () => {
+    let shunttrainpopcallback = () => {
+        //确认调车
+        console.log('确认调车', )
+        pop.close(popid)
+    }
+    let shunttrainpopcancel = () => {
+        //取消执行
+        console.log('取消执行', )
+    }
+    let popid = 'random' + Math.round(Math.random() * 1000)
+    let timecountdown = 10
+    let popidinterval = setInterval(() => {
+        timecountdown--
+        $(`#${popid} .pop-button[type=success]`).html(`确定（${timecountdown}）`)
+        if (timecountdown == 0) {
+            clearInterval(popidinterval)
+            pop.close(popid)
+            //执行调车
+            shunttrainpopcallback()
+        }
+    }, 1000);
+    pop.alert({
+        title: "提醒",
+        content: `001车发车计划：SAG至转换轨1的进路不满足执行条件，等待满足立即执行`,
+        button: [
+            ["success", "确定（10）",
+                shunttrainpopcallback
+            ],
+            ["default", "取消执行",
+                function (e) {
+                    shunttrainpopcancel()
+                    pop.close(e)
+                }
+            ]
+        ],
+        buttonSpcl: "",
+        sizeAdapt: false,
+        anim: "slide-bottom",
+        width: 450,
+        height: 200,
+        id: popid,
+        place: 9,
+        drag: true,
+        index: true,
+        mask: false,
+        class: false
+    });
+}

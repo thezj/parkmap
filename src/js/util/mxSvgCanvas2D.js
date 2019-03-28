@@ -1246,6 +1246,8 @@ mxSvgCanvas2D.prototype.createDiv = function(str, align, valign, style, overflow
 	if (!mxClient.IS_IE && document.createElementNS)
 	{
 		var div = document.createElementNS('http://www.w3.org/1999/xhtml', 'div');
+		//修改了默认的label html的div样式
+		style += 'display: flex;'
 		div.setAttribute('style', style);
 		
 		if (mxUtils.isNode(val))
