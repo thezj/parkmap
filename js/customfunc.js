@@ -19,7 +19,9 @@ class graphx {
 
     //生成一个新的div容器
     generatetrain(id) {
-        let idiv = graph.insertVertex(graph.model.cells[1], null, parkequip[10].cloneValue(), 0, 0, 220, 30, "text;html=1;strokeColor=none;fillColor=none;align=center;verticalAlign=middle;whiteSpace=wrap;rounded=0;fontColor=#FFFFFF;");
+        let value = parkequip[10].cloneValue()
+        value.setAttribute('istrain','true')
+        let idiv = graph.insertVertex(graph.model.cells[1], null, value, 0, 0, 220, 30, "text;html=1;strokeColor=none;fillColor=none;align=center;verticalAlign=middle;whiteSpace=wrap;rounded=0;fontColor=#FFFFFF;");
         this.setLabelText(idiv, `<div class='trainvessel' id="${id}"></div>`)
         parkequip[id] = idiv
     }
@@ -65,7 +67,7 @@ class graphx {
 
 
 
-        graph.translateCell(target, GX - target.geometry.x - target.geometry.width / 2, GY - target.geometry.y - target.geometry.height)
+        graph.translateCell(target, GX - target.geometry.x - target.geometry.width / 2, GY - target.geometry.y - target.geometry.height-7)
 
     }
 
@@ -1713,6 +1715,7 @@ struct IndicatorLightStatus {
 //设置现车状态
 window.set_globaltrain_state = trainstate => {
     console.log('全部现车状态初始化', trainstate)
+    window.deposittrainstate = trainstate
     //清空vessel
     $('.trainvessel').html('')
     let controlgraph = new graphx()
@@ -2066,7 +2069,7 @@ mxUtils.getAll([bundle, STYLE_PATH + '/default.xml', defualtxmldoc], function (x
             popid = 'random' + Math.round(Math.random() * 1000)
 
         //判断是否可以放下
-        if(!equipcell.value.getAttribute('type')){
+        if(!equipcell || !equipcell.value.getAttribute('type')){
             return
         }
         let equiptype = equipcell.value.getAttribute('type').toLowerCase()
@@ -2169,30 +2172,30 @@ mxUtils.getAll([bundle, STYLE_PATH + '/default.xml', defualtxmldoc], function (x
     mxUtils.makeDraggable(document.querySelector('#dragicons img:nth-child(2)'), window.graph, dragcallback, document.querySelector('#dragicons img:nth-child(2)').cloneNode(), -15, -15, false, false, true);
 
     //模拟处理现车
-    // setTimeout(x => {
-    //     set_globaltrain_state([{
-    //             type: 1, //类型,
-    //             name: 'as1232', //名称
-    //             position: '10AG', //位置’
-    //             status: 2, //状态
-    //             direction: 1 //方向
-    //         },
-    //         {
-    //             type: 1, //类型,
-    //             name: '1231', //名称
-    //             position: '8AG', //位置’
-    //             status: 1, //状态
-    //             direction: 0 //方向
-    //         },
-    //         {
-    //             type: 2, //类型,
-    //             name: '1233', //名称
-    //             position: '9AG', //位置’
-    //             status: 1, //状态
-    //             direction: 1 //方向
-    //         },
-    //     ])
-    // }, 10)
+    setTimeout(x => {
+        set_globaltrain_state([{
+                type: 1, //类型,
+                name: 'as1232', //名称
+                position: 't2615g', //位置’
+                status: 2, //状态
+                direction: 1 //方向
+            },
+            {
+                type: 1, //类型,
+                name: '1231', //名称
+                position: 't2615g', //位置’
+                status: 1, //状态
+                direction: 0 //方向
+            },
+            {
+                type: 2, //类型,
+                name: '1233', //名称
+                position: 'd2g', //位置’
+                status: 1, //状态
+                direction: 1 //方向
+            },
+        ])
+    }, 10)
 
 }, function () {
     document.body.innerHTML =
@@ -2373,6 +2376,26 @@ $('.busywire').on('click', function () {
 })
 $('.closebusyplane').on('click', function () {
     $('#dragicons').hide()
+})
+$('.triggertrain').on('click', function (e) {
+    console.log(e.target.innerText)
+    if(e.target.innerText == '显示列车'){
+        deposittrainstate.map(train=>{
+            vessel = parkequip['V'+train.name]
+            vessel.setVisible(1)
+            graph.refresh(vessel)
+        })
+        e.target.innerText = '隐藏列车'
+
+    }else{
+        deposittrainstate.map(train=>{
+            vessel = parkequip['V'+train.name]
+            vessel.setVisible(0)
+            graph.refresh(vessel)
+        })
+        e.target.innerText = '显示列车'
+    }
+   
 })
 
 

@@ -745,6 +745,7 @@ mxGraphHandler.prototype.mouseMove = function (sender, me) {
 			if (state != null && highlight) {
 				//如果targetcell是road则高亮提示
 				if (this.target.getAttribute('name') == 'road') {
+				
 					this.highlight.highlight(state);
 				}
 			} else {

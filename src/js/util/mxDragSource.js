@@ -15,30 +15,25 @@
  * 
  * Constructs a new drag source for the given element.
  */
-function mxDragSource(element, dropHandler)
-{
+function mxDragSource(element, dropHandler) {
 	this.element = element;
 	this.dropHandler = dropHandler;
-	
+
 	// Handles a drag gesture on the element
-	mxEvent.addGestureListeners(element, mxUtils.bind(this, function(evt)
-	{
+	mxEvent.addGestureListeners(element, mxUtils.bind(this, function (evt) {
 		this.mouseDown(evt);
 	}));
-	
+
 	// Prevents native drag and drop
-	mxEvent.addListener(element, 'dragstart', function(evt)
-	{
+	mxEvent.addListener(element, 'dragstart', function (evt) {
 		mxEvent.consume(evt);
 	});
-	
-	this.eventConsumer = function(sender, evt)
-	{
+
+	this.eventConsumer = function (sender, evt) {
 		var evtName = evt.getProperty('eventName');
 		var me = evt.getProperty('event');
-		
-		if (evtName != mxEvent.MOUSE_DOWN)
-		{
+
+		if (evtName != mxEvent.MOUSE_DOWN) {
 			me.consume();
 		}
 	};
@@ -178,8 +173,7 @@ mxDragSource.prototype.checkEventSource = true;
  * 
  * Returns <enabled>.
  */
-mxDragSource.prototype.isEnabled = function()
-{
+mxDragSource.prototype.isEnabled = function () {
 	return this.enabled;
 };
 
@@ -188,8 +182,7 @@ mxDragSource.prototype.isEnabled = function()
  * 
  * Sets <enabled>.
  */
-mxDragSource.prototype.setEnabled = function(value)
-{
+mxDragSource.prototype.setEnabled = function (value) {
 	this.enabled = value;
 };
 
@@ -198,8 +191,7 @@ mxDragSource.prototype.setEnabled = function(value)
  * 
  * Returns <guidesEnabled>.
  */
-mxDragSource.prototype.isGuidesEnabled = function()
-{
+mxDragSource.prototype.isGuidesEnabled = function () {
 	return this.guidesEnabled;
 };
 
@@ -208,8 +200,7 @@ mxDragSource.prototype.isGuidesEnabled = function()
  * 
  * Sets <guidesEnabled>.
  */
-mxDragSource.prototype.setGuidesEnabled = function(value)
-{
+mxDragSource.prototype.setGuidesEnabled = function (value) {
 	this.guidesEnabled = value;
 };
 
@@ -218,8 +209,7 @@ mxDragSource.prototype.setGuidesEnabled = function(value)
  * 
  * Returns <gridEnabled>.
  */
-mxDragSource.prototype.isGridEnabled = function()
-{
+mxDragSource.prototype.isGridEnabled = function () {
 	return this.gridEnabled;
 };
 
@@ -228,8 +218,7 @@ mxDragSource.prototype.isGridEnabled = function()
  * 
  * Sets <gridEnabled>.
  */
-mxDragSource.prototype.setGridEnabled = function(value)
-{
+mxDragSource.prototype.setGridEnabled = function (value) {
 	this.gridEnabled = value;
 };
 
@@ -239,8 +228,7 @@ mxDragSource.prototype.setGridEnabled = function(value)
  * Returns the graph for the given mouse event. This implementation returns
  * null.
  */
-mxDragSource.prototype.getGraphForEvent = function(evt)
-{
+mxDragSource.prototype.getGraphForEvent = function (evt) {
 	return null;
 };
 
@@ -250,8 +238,7 @@ mxDragSource.prototype.getGraphForEvent = function(evt)
  * Returns the drop target for the given graph and coordinates. This
  * implementation uses <mxGraph.getCellAt>.
  */
-mxDragSource.prototype.getDropTarget = function(graph, x, y, evt)
-{
+mxDragSource.prototype.getDropTarget = function (graph, x, y, evt) {
 	return graph.getCellAt(x, y);
 };
 
@@ -261,8 +248,7 @@ mxDragSource.prototype.getDropTarget = function(graph, x, y, evt)
  * Creates and returns a clone of the <dragElementPrototype> or the <element>
  * if the former is not defined.
  */
-mxDragSource.prototype.createDragElement = function(evt)
-{
+mxDragSource.prototype.createDragElement = function (evt) {
 	return this.element.cloneNode(true);
 };
 
@@ -272,8 +258,7 @@ mxDragSource.prototype.createDragElement = function(evt)
  * Creates and returns an element which can be used as a preview in the given
  * graph.
  */
-mxDragSource.prototype.createPreviewElement = function(graph)
-{
+mxDragSource.prototype.createPreviewElement = function (graph) {
 	return null;
 };
 
@@ -282,8 +267,7 @@ mxDragSource.prototype.createPreviewElement = function(graph)
  * 
  * Returns true if this drag source is active.
  */
-mxDragSource.prototype.isActive = function()
-{
+mxDragSource.prototype.isActive = function () {
 	return this.mouseMoveHandler != null;
 };
 
@@ -292,14 +276,12 @@ mxDragSource.prototype.isActive = function()
  * 
  * Stops and removes everything and restores the state of the object.
  */
-mxDragSource.prototype.reset = function()
-{
-	if (this.currentGraph != null)
-	{
+mxDragSource.prototype.reset = function () {
+	if (this.currentGraph != null) {
 		this.dragExit(this.currentGraph);
 		this.currentGraph = null;
 	}
-	
+
 	this.removeDragElement();
 	this.removeListeners();
 	this.stopDrag();
@@ -326,17 +308,14 @@ mxDragSource.prototype.reset = function()
  * };
  * (end)
  */
-mxDragSource.prototype.mouseDown = function(evt)
-{
-	if (this.enabled && !mxEvent.isConsumed(evt) && this.mouseMoveHandler == null)
-	{
+mxDragSource.prototype.mouseDown = function (evt) {
+	if (this.enabled && !mxEvent.isConsumed(evt) && this.mouseMoveHandler == null) {
 		this.startDrag(evt);
 		this.mouseMoveHandler = mxUtils.bind(this, this.mouseMove);
-		this.mouseUpHandler = mxUtils.bind(this, this.mouseUp);		
+		this.mouseUpHandler = mxUtils.bind(this, this.mouseUp);
 		mxEvent.addGestureListeners(document, null, this.mouseMoveHandler, this.mouseUpHandler);
-		
-		if (mxClient.IS_TOUCH && !mxEvent.isMouseEvent(evt))
-		{
+
+		if (mxClient.IS_TOUCH && !mxEvent.isMouseEvent(evt)) {
 			this.eventSource = mxEvent.getSource(evt);
 			mxEvent.addGestureListeners(this.eventSource, null, this.mouseMoveHandler, this.mouseUpHandler);
 		}
@@ -348,15 +327,13 @@ mxDragSource.prototype.mouseDown = function(evt)
  * 
  * Creates the <dragElement> using <createDragElement>.
  */
-mxDragSource.prototype.startDrag = function(evt)
-{
+mxDragSource.prototype.startDrag = function (evt) {
 	this.dragElement = this.createDragElement(evt);
 	this.dragElement.style.position = 'absolute';
 	this.dragElement.style.zIndex = this.dragElementZIndex;
 	mxUtils.setOpacity(this.dragElement, this.dragElementOpacity);
 
-	if (this.checkEventSource && mxClient.IS_SVG)
-	{
+	if (this.checkEventSource && mxClient.IS_SVG) {
 		this.dragElement.style.pointerEvents = 'none';
 	}
 };
@@ -366,8 +343,7 @@ mxDragSource.prototype.startDrag = function(evt)
  * 
  * Invokes <removeDragElement>.
  */
-mxDragSource.prototype.stopDrag = function()
-{
+mxDragSource.prototype.stopDrag = function () {
 	// LATER: This used to have a mouse event. If that is still needed we need to add another
 	// final call to the DnD protocol to add a cleanup step in the case of escape press, which
 	// is not associated with a mouse event and which currently calles this method.
@@ -379,15 +355,12 @@ mxDragSource.prototype.stopDrag = function()
  * 
  * Removes and destroys the <dragElement>.
  */
-mxDragSource.prototype.removeDragElement = function()
-{
-	if (this.dragElement != null)
-	{
-		if (this.dragElement.parentNode != null)
-		{
+mxDragSource.prototype.removeDragElement = function () {
+	if (this.dragElement != null) {
+		if (this.dragElement.parentNode != null) {
 			this.dragElement.parentNode.removeChild(this.dragElement);
 		}
-		
+
 		this.dragElement = null;
 	}
 };
@@ -397,11 +370,10 @@ mxDragSource.prototype.removeDragElement = function()
  * 
  * Returns the topmost element under the given event.
  */
-mxDragSource.prototype.getElementForEvent = function(evt)
-{
+mxDragSource.prototype.getElementForEvent = function (evt) {
 	return ((mxEvent.isTouchEvent(evt) || mxEvent.isPenEvent(evt)) ?
-			document.elementFromPoint(mxEvent.getClientX(evt), mxEvent.getClientY(evt)) :
-				mxEvent.getSource(evt));
+		document.elementFromPoint(mxEvent.getClientX(evt), mxEvent.getClientY(evt)) :
+		mxEvent.getSource(evt));
 };
 
 /**
@@ -409,18 +381,15 @@ mxDragSource.prototype.getElementForEvent = function(evt)
  * 
  * Returns true if the given graph contains the given event.
  */
-mxDragSource.prototype.graphContainsEvent = function(graph, evt)
-{
+mxDragSource.prototype.graphContainsEvent = function (graph, evt) {
 	var x = mxEvent.getClientX(evt);
 	var y = mxEvent.getClientY(evt);
 	var offset = mxUtils.getOffset(graph.container);
 	var origin = mxUtils.getScrollOrigin();
 	var elt = this.getElementForEvent(evt);
-	
-	if (this.checkEventSource)
-	{
-		while (elt != null && elt != graph.container)
-		{
+
+	if (this.checkEventSource) {
+		while (elt != null && elt != graph.container) {
 			elt = elt.parentNode;
 		}
 	}
@@ -438,64 +407,53 @@ mxDragSource.prototype.graphContainsEvent = function(graph, evt)
  * <currentGraph>, calling <dragEnter> and <dragExit> on the new and old graph,
  * respectively, and invokes <dragOver> if <currentGraph> is not null.
  */
-mxDragSource.prototype.mouseMove = function(evt)
-{
+mxDragSource.prototype.mouseMove = function (evt) {
 	var graph = this.getGraphForEvent(evt);
-	
+
 	// Checks if event is inside the bounds of the graph container
-	if (graph != null && !this.graphContainsEvent(graph, evt))
-	{
+	if (graph != null && !this.graphContainsEvent(graph, evt)) {
 		graph = null;
 	}
 
-	if (graph != this.currentGraph)
-	{
-		if (this.currentGraph != null)
-		{
+	if (graph != this.currentGraph) {
+		if (this.currentGraph != null) {
 			this.dragExit(this.currentGraph, evt);
 		}
-		
+
 		this.currentGraph = graph;
-		
-		if (this.currentGraph != null)
-		{
+
+		if (this.currentGraph != null) {
 			this.dragEnter(this.currentGraph, evt);
 		}
 	}
-	
-	if (this.currentGraph != null)
-	{
+
+	if (this.currentGraph != null) {
 		this.dragOver(this.currentGraph, evt);
 	}
 
-	if (this.dragElement != null && (this.previewElement == null || this.previewElement.style.visibility != 'visible'))
-	{
+	if (this.dragElement != null && (this.previewElement == null || this.previewElement.style.visibility != 'visible')) {
 		var x = mxEvent.getClientX(evt);
 		var y = mxEvent.getClientY(evt);
-		
-		if (this.dragElement.parentNode == null)
-		{
+
+		if (this.dragElement.parentNode == null) {
 			document.body.appendChild(this.dragElement);
 		}
 
 		this.dragElement.style.visibility = 'visible';
-		
-		if (this.dragOffset != null)
-		{
+
+		if (this.dragOffset != null) {
 			x += this.dragOffset.x;
 			y += this.dragOffset.y;
 		}
-		
+
 		var offset = mxUtils.getDocumentScrollOrigin(document);
-		
+
 		this.dragElement.style.left = (x + offset.x) + 'px';
 		this.dragElement.style.top = (y + offset.y) + 'px';
-	}
-	else if (this.dragElement != null)
-	{
+	} else if (this.dragElement != null) {
 		this.dragElement.style.visibility = 'hidden';
 	}
-	
+
 	mxEvent.consume(evt);
 };
 
@@ -505,28 +463,25 @@ mxDragSource.prototype.mouseMove = function(evt)
  * Processes the mouse up event and invokes <drop>, <dragExit> and <stopDrag>
  * as required.
  */
-mxDragSource.prototype.mouseUp = function(evt)
-{
-	if (this.currentGraph != null)
-	{
+mxDragSource.prototype.mouseUp = function (evt) {
+	if (this.currentGraph != null) {
 		if (this.currentPoint != null && (this.previewElement == null ||
-			this.previewElement.style.visibility != 'hidden'))
-		{
+				this.previewElement.style.visibility != 'hidden')) {
 			var scale = this.currentGraph.view.scale;
 			var tr = this.currentGraph.view.translate;
 			var x = this.currentPoint.x / scale - tr.x;
 			var y = this.currentPoint.y / scale - tr.y;
-			
+
 			this.drop(this.currentGraph, evt, this.currentDropTarget, x, y);
 		}
-		
+
 		this.dragExit(this.currentGraph);
 		this.currentGraph = null;
 	}
 
 	this.stopDrag();
 	this.removeListeners();
-	
+
 	mxEvent.consume(evt);
 };
 
@@ -535,14 +490,12 @@ mxDragSource.prototype.mouseUp = function(evt)
  * 
  * Actives the given graph as a drop target.
  */
-mxDragSource.prototype.removeListeners = function()
-{
-	if (this.eventSource != null)
-	{
+mxDragSource.prototype.removeListeners = function () {
+	if (this.eventSource != null) {
 		mxEvent.removeGestureListeners(this.eventSource, null, this.mouseMoveHandler, this.mouseUpHandler);
 		this.eventSource = null;
 	}
-	
+
 	mxEvent.removeGestureListeners(document, null, this.mouseMoveHandler, this.mouseUpHandler);
 	this.mouseMoveHandler = null;
 	this.mouseUpHandler = null;
@@ -553,28 +506,24 @@ mxDragSource.prototype.removeListeners = function()
  * 
  * Actives the given graph as a drop target.
  */
-mxDragSource.prototype.dragEnter = function(graph, evt)
-{
+mxDragSource.prototype.dragEnter = function (graph, evt) {
 	graph.isMouseDown = true;
 	graph.isMouseTrigger = mxEvent.isMouseEvent(evt);
 	this.previewElement = this.createPreviewElement(graph);
-	
-	if (this.previewElement != null && this.checkEventSource && mxClient.IS_SVG)
-	{
+
+	if (this.previewElement != null && this.checkEventSource && mxClient.IS_SVG) {
 		this.previewElement.style.pointerEvents = 'none';
 	}
-	
+
 	// Guide is only needed if preview element is used
-	if (this.isGuidesEnabled() && this.previewElement != null)
-	{
+	if (this.isGuidesEnabled() && this.previewElement != null) {
 		this.currentGuide = new mxGuide(graph, graph.graphHandler.getGuideStates());
 	}
-	
-	if (this.highlightDropTargets)
-	{
-		this.currentHighlight = new mxCellHighlight(graph, mxConstants.DROP_TARGET_COLOR,13);
+
+	if (this.highlightDropTargets) {
+		this.currentHighlight = new mxCellHighlight(graph, mxConstants.DROP_TARGET_COLOR, 13);
 	}
-	
+
 	// Consumes all events in the current graph before they are fired
 	graph.addListener(mxEvent.FIRE_MOUSE_EVENT, this.eventConsumer);
 };
@@ -584,33 +533,28 @@ mxDragSource.prototype.dragEnter = function(graph, evt)
  * 
  * Deactivates the given graph as a drop target.
  */
-mxDragSource.prototype.dragExit = function(graph, evt)
-{
+mxDragSource.prototype.dragExit = function (graph, evt) {
 	this.currentDropTarget = null;
 	this.currentPoint = null;
 	graph.isMouseDown = false;
-	
+
 	// Consumes all events in the current graph before they are fired
 	graph.removeListener(this.eventConsumer);
-	
-	if (this.previewElement != null)
-	{
-		if (this.previewElement.parentNode != null)
-		{
+
+	if (this.previewElement != null) {
+		if (this.previewElement.parentNode != null) {
 			this.previewElement.parentNode.removeChild(this.previewElement);
 		}
-		
+
 		this.previewElement = null;
 	}
-	
-	if (this.currentGuide != null)
-	{
+
+	if (this.currentGuide != null) {
 		this.currentGuide.destroy();
 		this.currentGuide = null;
 	}
-	
-	if (this.currentHighlight != null)
-	{
+
+	if (this.currentHighlight != null) {
 		this.currentHighlight.destroy();
 		this.currentHighlight = null;
 	}
@@ -622,49 +566,50 @@ mxDragSource.prototype.dragExit = function(graph, evt)
  * Implements autoscroll, updates the <currentPoint>, highlights any drop
  * targets and updates the preview.
  */
-mxDragSource.prototype.dragOver = function(graph, evt)
-{
+mxDragSource.prototype.dragOver = function (graph, evt) {
 	var offset = mxUtils.getOffset(graph.container);
 	var origin = mxUtils.getScrollOrigin(graph.container);
 	var x = mxEvent.getClientX(evt) - offset.x + origin.x - graph.panDx;
 	var y = mxEvent.getClientY(evt) - offset.y + origin.y - graph.panDy;
 
-	if (graph.autoScroll && (this.autoscroll == null || this.autoscroll))
-	{
+	if (graph.autoScroll && (this.autoscroll == null || this.autoscroll)) {
 		graph.scrollPointToVisible(x, y, graph.autoExtend);
 	}
 
 	//如果拖拽目标是组就不显示高亮，画出的组是乱的一个边框
 	// Highlights the drop target under the mouse
-	if (this.currentHighlight != null && graph.isDropEnabled() && this.getDropTarget(graph, x, y, evt) &&  !this.getDropTarget(graph, x, y, evt).children)
-	{
-		this.currentDropTarget = this.getDropTarget(graph, x, y, evt);
-		var state = graph.getView().getState(this.currentDropTarget);
+	if (1) {
+		if (this.currentHighlight != null && graph.isDropEnabled() && this.getDropTarget(graph, x, y, evt) && !this.getDropTarget(graph, x, y, evt).children) {
+			this.currentDropTarget = this.getDropTarget(graph, x, y, evt);
+			var state = graph.getView().getState(this.currentDropTarget);
 
-		this.currentHighlight.highlight(state);
-		this.findtargetcell = this.currentDropTarget
-	}else{
-		this.currentHighlight.hide()
-		this.findtargetcell = null
-	}
 
-	// Updates the location of the preview
-	if (this.previewElement != null)
-	{
-		if (this.previewElement.parentNode == null)
-		{
-			graph.container.appendChild(this.previewElement);
+			//如果是现车显示的lable则取消高亮
+		if(!this.currentDropTarget.value.getAttribute('istrain')){
+			this.currentHighlight.highlight(state);
+			this.findtargetcell = this.currentDropTarget
+		}
+
 			
+		} else {
+			this.currentHighlight.hide()
+			this.findtargetcell = null
+		}
+	}
+	// Updates the location of the preview
+	if (this.previewElement != null) {
+		if (this.previewElement.parentNode == null) {
+			graph.container.appendChild(this.previewElement);
+
 			this.previewElement.style.zIndex = '3';
 			this.previewElement.style.position = 'absolute';
 		}
-		
+
 		var gridEnabled = this.isGridEnabled() && graph.isGridEnabledEvent(evt);
 		var hideGuide = true;
 
 		// Grid and guides
-		if (this.currentGuide != null && this.currentGuide.isEnabledForEvent(evt))
-		{
+		if (this.currentGuide != null && this.currentGuide.isEnabledForEvent(evt)) {
 			// LATER: HTML preview appears smaller than SVG preview
 			var w = parseInt(this.previewElement.style.width);
 			var h = parseInt(this.previewElement.style.height);
@@ -674,23 +619,19 @@ mxDragSource.prototype.dragOver = function(graph, evt)
 			hideGuide = false;
 			x = delta.x;
 			y = delta.y;
-		}
-		else if (gridEnabled)
-		{
+		} else if (gridEnabled) {
 			var scale = graph.view.scale;
 			var tr = graph.view.translate;
 			var off = graph.gridSize / 2;
 			x = (graph.snap(x / scale - tr.x - off) + tr.x) * scale;
 			y = (graph.snap(y / scale - tr.y - off) + tr.y) * scale;
 		}
-		
-		if (this.currentGuide != null && hideGuide)
-		{
+
+		if (this.currentGuide != null && hideGuide) {
 			this.currentGuide.hide();
 		}
-		
-		if (this.previewOffset != null)
-		{
+
+		if (this.previewOffset != null) {
 			x += this.previewOffset.x;
 			y += this.previewOffset.y;
 		}
@@ -699,7 +640,7 @@ mxDragSource.prototype.dragOver = function(graph, evt)
 		this.previewElement.style.top = Math.round(y) + 'px';
 		this.previewElement.style.visibility = 'visible';
 	}
-	
+
 	this.currentPoint = new mxPoint(x, y);
 };
 
@@ -709,16 +650,14 @@ mxDragSource.prototype.dragOver = function(graph, evt)
  * Returns the drop target for the given graph and coordinates. This
  * implementation uses <mxGraph.getCellAt>.
  */
-mxDragSource.prototype.drop = function(graph, evt, dropTarget, x, y)
-{
+mxDragSource.prototype.drop = function (graph, evt, dropTarget, x, y) {
 	this.dropHandler.apply(this, arguments);
-	
+
 	// Had to move this to after the insert because it will
 	// affect the scrollbars of the window in IE to try and
 	// make the complete container visible.
 	// LATER: Should be made optional.
-	if (graph.container.style.visibility != 'hidden')
-	{
+	if (graph.container.style.visibility != 'hidden') {
 		graph.container.focus();
 	}
 };
