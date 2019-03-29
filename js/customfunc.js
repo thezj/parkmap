@@ -8,6 +8,7 @@
 
 class graphx {
 
+
     constructor() {
         this.graph = window.graph
     }
@@ -915,7 +916,7 @@ window.graphAction = {
         if (copy.clickPath[0] == copy.clickPath[1]) {
             return
         }
-        console.log(copy)
+        console.log('前端发出命令', copy)
         window.cefQuery({
             request: JSON.stringify({
                 cmd: "commit_action",
@@ -1115,9 +1116,11 @@ window.graphAction = {
                     //在区故解时显示全部区段
                     Object.keys(window.switchbelongsector).map(k => {
                         let c = window.parkequip[k.toLowerCase()]
-                        c.setVisible(1)
-                        window.graph.refresh(c)
-                        window.graph.view.getState(c, new mxCellState(graph, c, 'cursor=pointer')).setCursor('pointer')
+                        if (c) {
+                            c.setVisible(1)
+                            window.graph.refresh(c)
+                            window.graph.view.getState(c, new mxCellState(graph, c, 'cursor=pointer')).setCursor('pointer')
+                        }
                     })
 
                     this.startCounting()
@@ -1337,7 +1340,7 @@ window.graphAction = {
         if (this.status == 13) {
             console.log(equip, button)
             if (equip.type == 'wc' || equip.type == 'cq') {
-                console.log('区段故障解锁:', equip.uid)
+                console.log('区段故障解锁:', equip, button)
                 //隐藏cq股道
                 //在区故解时显示全部区段
                 Object.keys(window.switchbelongsector).map(k => {
@@ -2009,7 +2012,7 @@ mxUtils.getAll([bundle, STYLE_PATH + '/default.xml', defualtxmldoc], function (x
                     //把点击按钮和部件发送给graphAction处理
                     let uindex = equipcellindex[evt.sourceState.cell.id] ? equipcellindex[evt.sourceState.cell.id] : equipcellindex[getEquipCell(evt.sourceState.cell).id]
 
-                    if(evt.sourceState.cell.value.getAttribute('name') == 'fork'){
+                    if (evt.sourceState.cell.value.getAttribute('name') == 'fork') {
 
                         getEquipCell(evt.sourceState.cell).getSubCell('button').map(l => {
                             if (l.value.getAttribute('type').toUpperCase() == evt.sourceState.cell.value.getAttribute('type').toUpperCase()) {
@@ -2048,22 +2051,50 @@ mxUtils.getAll([bundle, STYLE_PATH + '/default.xml', defualtxmldoc], function (x
                     }
                 }
 
+
+
                 if (belongsectors) {
+
+                    let cqindex
+
+                    equipindex.map(s => {
+                        let index = s.split(' = ')[0]
+                        let name = s.split(' = ')[1]
+                        let ty = s.split(' = ')[2]
+
+                        if (name == cqid) {
+                            cqindex = index
+                        }
+                    })
                     window.graphAction.buttonClick({
                         cell: getEquipCell(evt.sourceState.cell),
                         type: 'cq'
                     }, {
                         name: evt.sourceState.cell.getAttribute('name'),
-                        uindex: equipcellindex[evt.sourceState.cell.id] ? equipcellindex[evt.sourceState.cell.id] : equipcellindex[getEquipCell(evt.sourceState.cell).id],
+                        uindex: cqindex,
                         type: evt.sourceState.cell.getAttribute('type')
                     }, evt.evt)
                 } else if (evt.sourceState.cell.getAttribute('belongsector')) {
+
+
+                    let cqindex
+
+                    equipindex.map(s => {
+                        let index = s.split(' = ')[0]
+                        let name = s.split(' = ')[1]
+                        let ty = s.split(' = ')[2]
+
+                        if (name.toLowerCase() == evt.sourceState.cell.getAttribute('belongsector').toLowerCase()) {
+                            cqindex = index
+                        }
+                    })
+
                     window.graphAction.buttonClick({
                         cell: getEquipCell(evt.sourceState.cell),
                         type: 'cq'
                     }, {
                         name: evt.sourceState.cell.getAttribute('name'),
-                        uindex: equipcellindex[evt.sourceState.cell.id] ? equipcellindex[evt.sourceState.cell.id] : equipcellindex[getEquipCell(evt.sourceState.cell).id],
+                        uindex: cqindex,
                         type: evt.sourceState.cell.getAttribute('type')
                     }, evt.evt)
                 }
