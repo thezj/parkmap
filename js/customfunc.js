@@ -2008,6 +2008,17 @@ mxUtils.getAll([bundle, STYLE_PATH + '/default.xml', defualtxmldoc], function (x
                 if (getCellUid(evt.sourceState.cell)) {
                     //把点击按钮和部件发送给graphAction处理
                     let uindex = equipcellindex[evt.sourceState.cell.id] ? equipcellindex[evt.sourceState.cell.id] : equipcellindex[getEquipCell(evt.sourceState.cell).id]
+
+                    if(evt.sourceState.cell.value.getAttribute('name') == 'fork'){
+
+                        getEquipCell(evt.sourceState.cell).getSubCell('button').map(l => {
+                            if (l.value.getAttribute('type').toUpperCase() == evt.sourceState.cell.value.getAttribute('type').toUpperCase()) {
+                                uindex = equipcellindex[l.id]
+                            }
+                        })
+
+                    }
+
                     if (evt.sourceState.cell.value.getAttribute('name') == 'boundary') {
                         getEquipCell(evt.sourceState.cell).getSubCell('light').map(l => {
                             if (l.value.getAttribute('type').toUpperCase() == evt.sourceState.cell.value.getAttribute('type').toUpperCase()) {
