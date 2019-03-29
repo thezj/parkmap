@@ -583,14 +583,12 @@ mxDragSource.prototype.dragOver = function (graph, evt) {
 			this.currentDropTarget = this.getDropTarget(graph, x, y, evt);
 			var state = graph.getView().getState(this.currentDropTarget);
 
-
 			//如果是现车显示的lable则取消高亮
-		if(!this.currentDropTarget.value.getAttribute('istrain')){
-			this.currentHighlight.highlight(state);
-			this.findtargetcell = this.currentDropTarget
-		}
+			if (this.currentDropTarget.value && this.currentDropTarget.value.getAttribute && !this.currentDropTarget.value.getAttribute('istrain')) {
+				this.currentHighlight.highlight(state);
+				this.findtargetcell = this.currentDropTarget
+			}
 
-			
 		} else {
 			this.currentHighlight.hide()
 			this.findtargetcell = null

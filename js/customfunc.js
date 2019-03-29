@@ -19,17 +19,17 @@ class graphx {
 
     //生成一个新的div容器
     generatetrain(id) {
-        let value = parkequip[10].cloneValue()
-        value.setAttribute('istrain','true')
+        let value = parkequip[2].cloneValue()
+        value.setAttribute('istrain', 'true')
         let idiv = graph.insertVertex(graph.model.cells[1], null, value, 0, 0, 220, 30, "text;html=1;strokeColor=none;fillColor=none;align=center;verticalAlign=middle;whiteSpace=wrap;rounded=0;fontColor=#FFFFFF;");
-        this.setLabelText(idiv, `<div class='trainvessel' id="${id}"></div>`)
+        this.setLabelText(idiv, `<div style='visibility:hidden' class='trainvessel trainvesseltrain' id="${id}"></div>`)
         parkequip[id] = idiv
     }
     //修改div内容
 
     setDivhtml(id, jhtmls) {
         $('#' + id).append(jhtmls)
-        parkequip[id].setAttribute('label', $($('#' + id).parent()).html())
+        parkequip[id].value.setAttribute('label', $($('#' + id).parent()).html())
     }
 
     //移动cell到某点 
@@ -38,6 +38,7 @@ class graphx {
      */
     imovecell(id, position) {
         //vessel
+
         let target = parkequip[id]
 
         let goal = parkequip[position],
@@ -66,27 +67,27 @@ class graphx {
         }
 
 
-
-        graph.translateCell(target, GX - target.geometry.x - target.geometry.width / 2, GY - target.geometry.y - target.geometry.height-7)
-
+        graph.translateCell(target, GX - target.geometry.x - target.geometry.width / 2, GY - target.geometry.y - target.geometry.height - 7)
+        if (!window.ishidevessel) {
+            window.graph.orderCells(1, [target])
+        }
     }
 
 
 
-    setTrainStatus(alls, status, nofresh) {
+    setTrainStatus(alls, status, nofresh, cindex) {
 
         //为每个车创建容器
         let vesselid = 'V' + status.name
         if (!document.querySelector('#' + vesselid)) {
-            console.log(vesselid)
             this.generatetrain(vesselid)
         }
         //生成列车
         let train = $(`<div class='trainbk' id='train${status.name}'>${status.name}</div>`)
 
         //目标位置是否有车
-        let hasTrain = alls.find(x => {
-            if (document.querySelector('#train' + x.name) && x.name != status.name && x.position.toUpperCase() == status.position.toUpperCase()) {
+        let hasTrain = alls.find((x, xi) => {
+            if (xi < cindex && x.name != status.name && x.position.toUpperCase() == status.position.toUpperCase()) {
                 return true
             } else {
                 return false
@@ -475,7 +476,7 @@ class graphx {
                 let referenceposition = lightda.geometry
                 let boundaryvalue = lightda.value.cloneNode(true)
                 boundaryvalue.setAttribute('name', 'fork')
-                let newboundary = this.graph.insertVertex(lightda.parent, null, '', referenceposition.x + 3, referenceposition.y + 3, 14, 14, "shape=umlDestroy;whiteSpace=wrap;html=1;aspect=fixed;strokeColor=red;fillColor=none;cursor=pointer;");
+                let newboundary = this.graph.insertVertex(lightda.parent, null, '', referenceposition.x + 3, referenceposition.y + 3, 14, 14, "shape=umlDestroy;whiteSpace=wrap;strokeWidth=2;html=1;aspect=fixed;strokeColor=red;fillColor=none;cursor=pointer;");
                 newboundary.value = boundaryvalue
                 boundary.push(newboundary)
             }
@@ -484,7 +485,20 @@ class graphx {
                 let referenceposition = lightda.geometry
                 let boundaryvalue = lightda.value.cloneNode(true)
                 boundaryvalue.setAttribute('name', 'boundary')
-                let newboundary = this.graph.insertVertex(lightda.parent, null, '', referenceposition.x, referenceposition.y, 19, 19, "whiteSpace=wrap;html=1;aspect=fixed;strokeColor=red;fillColor=none;cursor=pointer;");
+                //是否有两个灯
+                let newboundary
+                if (light.length == 2) {
+                    //是否在左边
+                    let lightnone = light.find(i => i.getAttribute('type') != 'da')
+                    if (lightda.geometry.x > lightnone.geometry.x) {
+                        newboundary = this.graph.insertVertex(lightda.parent, null, '', referenceposition.x - 21, referenceposition.y, 42, 19, "whiteSpace=wrap;html=1;aspect=fixed;strokeWidth=2;strokeColor=red;fillColor=none;cursor=pointer;");
+
+                    } else {
+                        newboundary = this.graph.insertVertex(lightda.parent, null, '', referenceposition.x, referenceposition.y, 42, 19, "whiteSpace=wrap;html=1;aspect=fixed;strokeWidth=2;strokeColor=red;fillColor=none;cursor=pointer;");
+                    }
+                } else {
+                    newboundary = this.graph.insertVertex(lightda.parent, null, '', referenceposition.x, referenceposition.y, 19, 19, "whiteSpace=wrap;html=1;aspect=fixed;strokeWidth=2;strokeColor=red;fillColor=none;cursor=pointer;");
+                }
                 newboundary.value = boundaryvalue
                 newboundary.specialname = 'rect'
                 boundary.push(newboundary)
@@ -496,20 +510,11 @@ class graphx {
                 let referenceposition = lightda.geometry
                 let boundaryvalue = lightda.value.cloneNode(true)
                 boundaryvalue.setAttribute('name', 'fork')
-                let newboundary = this.graph.insertVertex(lightda.parent, null, '', referenceposition.x + 3, referenceposition.y + 3, 14, 14, "shape=umlDestroy;whiteSpace=wrap;html=1;aspect=fixed;strokeColor=red;fillColor=none;cursor=pointer;");
+                let newboundary = this.graph.insertVertex(lightda.parent, null, '', referenceposition.x + 3, referenceposition.y + 3, 14, 14, "shape=umlDestroy;whiteSpace=wrap;html=1;strokeWidth=2;aspect=fixed;strokeColor=red;fillColor=none;cursor=pointer;");
                 newboundary.value = boundaryvalue
                 boundary.push(newboundary)
             }
-            //方框
-            if (lightda) {
-                let referenceposition = lightda.geometry
-                let boundaryvalue = lightda.value.cloneNode(true)
-                boundaryvalue.setAttribute('name', 'boundary')
-                let newboundary = this.graph.insertVertex(lightda.parent, null, '', referenceposition.x, referenceposition.y, 19, 19, "whiteSpace=wrap;html=1;aspect=fixed;strokeColor=red;fillColor=none;cursor=pointer;");
-                newboundary.value = boundaryvalue
-                newboundary.specialname = 'rect'
-                boundary.push(newboundary)
-            }
+
 
 
             //获取列车信号按钮坐标作为参考,创建一个叉
@@ -518,7 +523,7 @@ class graphx {
                 let referenceposition = lightda.geometry
                 let boundaryvalue = lightda.value.cloneNode(true)
                 boundaryvalue.setAttribute('name', 'fork')
-                let newboundary = this.graph.insertVertex(lightda.parent, null, '', referenceposition.x, referenceposition.y, 14, 14, "shape=umlDestroy;whiteSpace=wrap;html=1;aspect=fixed;strokeColor=red;fillColor=none;cursor=pointer;");
+                let newboundary = this.graph.insertVertex(lightda.parent, null, '', referenceposition.x, referenceposition.y, 14, 14, "shape=umlDestroy;whiteSpace=wrap;html=1;aspect=fixed;strokeWidth=2;strokeColor=red;fillColor=none;cursor=pointer;");
                 newboundary.value = boundaryvalue
                 boundary.push(newboundary)
             }
@@ -529,7 +534,7 @@ class graphx {
                 let referenceposition = lightda.geometry
                 let boundaryvalue = lightda.value.cloneNode(true)
                 boundaryvalue.setAttribute('name', 'fork')
-                let newboundary = this.graph.insertVertex(lightda.parent, null, '', referenceposition.x, referenceposition.y, 14, 14, "shape=umlDestroy;whiteSpace=wrap;html=1;aspect=fixed;strokeColor=red;fillColor=none;cursor=pointer;");
+                let newboundary = this.graph.insertVertex(lightda.parent, null, '', referenceposition.x, referenceposition.y, 14, 14, "shape=umlDestroy;whiteSpace=wrap;html=1;aspect=fixed;strokeWidth=2;strokeColor=red;fillColor=none;cursor=pointer;");
                 newboundary.value = boundaryvalue
                 boundary.push(newboundary)
             }
@@ -1409,7 +1414,7 @@ window.globalinterval = setInterval(() => {
     for (let cell of globalintervalcell) {
         cell.visible = !cell.visible
         setTimeout(x => {
-            this.graph.refresh(cell)
+            window.graph.refresh(cell)
         }, 30)
     }
 
@@ -1716,13 +1721,13 @@ struct IndicatorLightStatus {
 window.set_globaltrain_state = trainstate => {
     console.log('全部现车状态初始化', trainstate)
     window.deposittrainstate = trainstate
-    //清空vessel
-    $('.trainvessel').html('')
+    //移除现有vessel
+    $('.trainvesseltrain').html('')
     let controlgraph = new graphx()
     let model = controlgraph.graph.getModel()
     model.beginUpdate();
     trainstate.map((i, index) => {
-        controlgraph.setTrainStatus(trainstate, i, true)
+        controlgraph.setTrainStatus(trainstate, i, true, index)
     })
     model.endUpdate();
 }
@@ -1831,7 +1836,7 @@ mxUtils.getAll([bundle, STYLE_PATH + '/default.xml', defualtxmldoc], function (x
         //给灯加一个底圈
         if (cell.getAttribute('name') == 'light' && /^[^\u4e00-\u9fa5]+$/.test(getCellUid(cell))) {
             let referenceposition = cell.geometry,
-                newboundary = this.graph.insertVertex(cell.parent, null, '', referenceposition.x, referenceposition.y, 19, 19, "shape=ellipse;whiteSpace=wrap;html=1;aspect=fixed;strokeColor=#3694FF;fillColor=black;cursor=pointer;");
+                newboundary = window.graph.insertVertex(cell.parent, null, '', referenceposition.x, referenceposition.y, 19, 19, "shape=ellipse;whiteSpace=wrap;html=1;aspect=fixed;strokeColor=#3694FF;fillColor=black;cursor=pointer;");
             window.graph.orderCells(1, [newboundary])
 
             if (getEquipCell(cell)) {
@@ -1899,9 +1904,9 @@ mxUtils.getAll([bundle, STYLE_PATH + '/default.xml', defualtxmldoc], function (x
             boundaryvalue.setAttribute('name', 'boundary')
             let newboundary
             if (!rightward) {
-                newboundary = this.graph.insertVertex(cell, null, '', referenceposition.x - 15 + referenceposition.width, referenceposition.y - 9, 23, 23, "shape=ellipse;whiteSpace=wrap;html=1;aspect=fixed;strokeColor=red;fillColor=none;cursor=pointer;");
+                newboundary = window.graph.insertVertex(cell, null, '', referenceposition.x - 15 + referenceposition.width, referenceposition.y - 9, 23, 23, "shape=ellipse;whiteSpace=wrap;html=1;aspect=fixed;strokeColor=red;fillColor=none;cursor=pointer;");
             } else {
-                newboundary = this.graph.insertVertex(cell, null, '', referenceposition.x - 6, referenceposition.y - 9, 23, 23, "shape=ellipse;whiteSpace=wrap;html=1;aspect=fixed;strokeColor=red;fillColor=none;cursor=pointer;");
+                newboundary = window.graph.insertVertex(cell, null, '', referenceposition.x - 6, referenceposition.y - 9, 23, 23, "shape=ellipse;whiteSpace=wrap;html=1;aspect=fixed;strokeColor=red;fillColor=none;cursor=pointer;");
             }
             newboundary.value = boundaryvalue
             newboundary.specialname = 'lock'
@@ -1912,6 +1917,11 @@ mxUtils.getAll([bundle, STYLE_PATH + '/default.xml', defualtxmldoc], function (x
 
         //如果发现uid属性则加入全局存放
         if (cell.getAttribute('uid')) {
+
+            //把road放置到最上面，保证添加占线图标后图标在road的label上能显示到最前
+            if (cell.getSubCell('road')) {
+                graph.orderCells(0, [cell.getSubCell('road')[0]])
+            }
             let uid = cell.getAttribute('uid').toUpperCase()
             cell.setAttribute('uid', uid)
             window.parkequip[cell.getAttribute('uid')] = cell
@@ -1981,7 +1991,17 @@ mxUtils.getAll([bundle, STYLE_PATH + '/default.xml', defualtxmldoc], function (x
         mouseDown: function (sender, evt) {
 
             //过滤鼠标右键
-            if (evt.evt.button == 2) return
+            if (evt.evt.button == 2) {
+
+                if (evt.evt.target && evt.evt.target.className && evt.evt.target.className.indexOf && evt.evt.target.className.indexOf('placedbusyicon') > -1) {
+                    //占线板图标右键
+                    if (evt.sourceState.cell && getCellUid(evt.sourceState.cell)) {
+                        window.busytypedata = getCellUid(evt.sourceState.cell)
+
+                    }
+                }
+                return
+            }
             //过滤非点击区域
             if (evt.sourceState) {
 
@@ -2069,7 +2089,7 @@ mxUtils.getAll([bundle, STYLE_PATH + '/default.xml', defualtxmldoc], function (x
             popid = 'random' + Math.round(Math.random() * 1000)
 
         //判断是否可以放下
-        if(!equipcell || !equipcell.value.getAttribute('type')){
+        if (!equipcell || !equipcell.value.getAttribute('type')) {
             return
         }
         let equiptype = equipcell.value.getAttribute('type').toLowerCase()
@@ -2085,19 +2105,22 @@ mxUtils.getAll([bundle, STYLE_PATH + '/default.xml', defualtxmldoc], function (x
             //确认放下的回调
             callback = () => {
                 pop.close(popid)
+
+                //如果放置位置是wc
                 if (equiptype == 'wc') {
                     equipcell.busytypes[busytype] = true
 
                     //放置图标到roadlabel上
                     let doms = $(equipcell.getSubCell('road')[0].value.getAttribute('label'))
-                    if(doms.length == 0){
-                        doms = $(`<div class='trainvessel'></div>`)
+                    if (doms.length == 0) {
+                        doms = $(`<div class='trainvessel trainvesselbusy'></div>`)
                     }
                     doms.append($(`<img class='placedbusyicon busytype-${busytype}' style='width:30px; height:30px;' src="${this.element.src}" >`))
 
-                    equipcell.getSubCell('road')[0].value.setAttribute('label',`<div class='trainvessel'>${doms.html()}</div>`)
+                    equipcell.getSubCell('road')[0].value.setAttribute('label', `<div class='trainvessel'>${doms.html()}</div>`)
                     graph.refresh(equipcell)
                 }
+
             }
 
             //把状态放到equip上
@@ -2371,62 +2394,87 @@ $('#graphactionbtnsub4').on('click', function () {
 $('#graphactionbtnsub3').on('click', function () {
     $('#graphactionbtnsub2').hide()
 })
-$('.busywire').on('click', function () {
-    $('#dragicons').show()
+
+
+//占线板右键移除
+$('body').on('click', '.placedbusyicon', function (e) {
+    console.log(e)
+    if (3 == e.which) {
+        alert('这是右键单击事件');
+    } else if (1 == e.which) {
+        alert('这是左键单击事件');
+    }
 })
-$('.closebusyplane').on('click', function () {
-    $('#dragicons').hide()
+
+$('.busywire').on('click', function (e) {
+    if (e.target.innerText == '占线板') {
+        $('#dragicons').show()
+        setTimeout(() => {
+            $('.placedbusyicon').css({
+                'visibility': 'unset'
+            })
+        }, 10);
+        e.target.innerText = '关占线板'
+
+    } else {
+        $('#dragicons').hide()
+        setTimeout(() => {
+            $('.placedbusyicon').css({
+                'visibility': 'hidden'
+            })
+        }, 10);
+        e.target.innerText = '占线板'
+    }
+
 })
+
 $('.triggertrain').on('click', function (e) {
-    console.log(e.target.innerText)
-    if(e.target.innerText == '显示列车'){
-        deposittrainstate.map(train=>{
-            vessel = parkequip['V'+train.name]
-            vessel.setVisible(1)
+    if (e.target.innerText == '显示列车') {
+        window.ishidevessel = true
+        setTimeout(() => {
+            $('.trainvesseltrain').css({
+                'visibility': 'unset'
+            })
+        }, 10);
+        deposittrainstate.map(train => {
+            vessel = parkequip['V' + train.name]
+            window.graph.orderCells(0, [vessel])
             graph.refresh(vessel)
         })
         e.target.innerText = '隐藏列车'
 
-    }else{
-        deposittrainstate.map(train=>{
-            vessel = parkequip['V'+train.name]
-            vessel.setVisible(0)
+    } else {
+        window.ishidevessel = false
+        setTimeout(() => {
+            $('.trainvesseltrain').css({
+                'visibility': 'hidden'
+            })
+        }, 10);
+        deposittrainstate.map(train => {
+            vessel = parkequip['V' + train.name]
+            window.graph.orderCells(1, [vessel])
             graph.refresh(vessel)
         })
         e.target.innerText = '显示列车'
     }
-   
+
 })
 
 
 
 //初始化vue
-$.ajax({
-    url: `http://172.16.109.91:9000/metro_park_dispatch/get_dispatch_plans/`,
-    type: "post",
-    dataType: "json",
-    success: function (data) {
-        console.log(data)
-        window.switchbelongsector = data
-    }
-})
+
 $('.assistbutshunttrain').on('click', function () {
-    //获取调车数据
-
-
-
     $('.shunttrain').css({
         'z-index': 999
     })
 })
-
 let ishunttrainTdrag = setInterval(() => {
     if ($(".shunttrain").Tdrag) {
         $(".shunttrain").Tdrag();
         clearInterval(ishunttrainTdrag)
     }
 }, 100);
-
 window.shunttrainvue = new Vue({
     el: '.shunttrain',
     data: {
@@ -2517,3 +2565,61 @@ window.popShuntTrain = () => {
         class: false
     });
 }
+
+//右键菜单配置
+
+$(document).ready(function () {
+    context.init({
+        preventDoubleContext: false
+    });
+    //给不同占线右键添加action
+    context.attach('.busytype-2', [{
+        text: '移除',
+        action: function (e) {
+            e.preventDefault()
+            if (window.busytypedata) {
+                let uid = window.busytypedata
+                //去掉cell的label中的图标还有cell的状态
+                parkequip[uid].busytypes['2'] = false
+                let jdom = $(parkequip[uid].getSubCell('road')[0].value.getAttribute('label'))
+                jdom.find('.busytype-2').remove()
+                parkequip[uid].getSubCell('road')[0].value.setAttribute('label', `<div class='trainvessel'>${jdom.html()}</div>`)
+                graph.refresh(parkequip[uid])
+            }
+
+        }
+    }]);
+    context.attach('.busytype-1', [{
+        text: '移除',
+        action: function (e) {
+            e.preventDefault()
+            if (window.busytypedata) {
+                let uid = window.busytypedata
+                //去掉cell的label中的图标还有cell的状态
+                parkequip[uid].busytypes['1'] = false
+                let jdom = $(parkequip[uid].getSubCell('road')[0].value.getAttribute('label'))
+                jdom.find('.busytype-1').remove()
+                parkequip[uid].getSubCell('road')[0].value.setAttribute('label', `<div class='trainvessel'>${jdom.html()}</div>`)
+                graph.refresh(parkequip[uid])
+            }
+
+        }
+    }]);
+
+    $(document).on('mouseover', '.me-codesta', function () {
+        $('.finale h1:first').css({
+            opacity: 0
+        });
+        $('.finale h1:last').css({
+            opacity: 1
+        });
+    });
+    $(document).on('mouseout', '.me-codesta', function () {
+        $('.finale h1:last').css({
+            opacity: 0
+        });
+        $('.finale h1:first').css({
+            opacity: 1
+        });
+    });
+});
