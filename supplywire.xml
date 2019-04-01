@@ -1,4 +1,4 @@
-<mxGraphModel dx="2323" dy="1273" grid="0" gridSize="1" guides="1" tooltips="1" connect="1" arrows="0" fold="1" page="1" pageScale="1" pageWidth="5500" pageHeight="1600" background="#000000" math="0" shadow="0">
+<mxGraphModel dx="3485" dy="1910" grid="0" gridSize="1" guides="1" tooltips="1" connect="1" arrows="0" fold="1" page="1" pageScale="1" pageWidth="5500" pageHeight="1600" background="#000000" math="0" shadow="0">
   <root>
     <mxCell id="0"/>
     <mxCell id="Rzk559V0BYMHQ7gyap36-1" value="供电分区" style="" parent="0"/>
@@ -98,17 +98,17 @@
     <mxCell id="Rzk559V0BYMHQ7gyap36-351" value="供电分区1" style="text;html=1;strokeColor=none;fillColor=none;align=center;verticalAlign=middle;whiteSpace=wrap;rounded=0;fontColor=#FFFFFF;fontSize=40;fontStyle=1" parent="Rzk559V0BYMHQ7gyap36-1" vertex="1">
       <mxGeometry x="4444" y="1287" width="39" height="244" as="geometry"/>
     </mxCell>
-    <object label="" uid="wireout" id="Rzk559V0BYMHQ7gyap36-352">
+    <object label="" uid="supplysector0" type="trigger" id="Rzk559V0BYMHQ7gyap36-352">
       <mxCell style="triangle;whiteSpace=wrap;html=1;strokeColor=#FFFFFF;fillColor=#FF0000;fontSize=40;fontColor=#FFFFFF;rotation=90;" parent="Rzk559V0BYMHQ7gyap36-1" vertex="1">
         <mxGeometry x="4343" y="1276.5" width="60" height="50" as="geometry"/>
       </mxCell>
     </object>
-    <object label="" uid="supplysector1" id="Rzk559V0BYMHQ7gyap36-353">
+    <object label="" uid="supplysector1" type="trigger" id="Rzk559V0BYMHQ7gyap36-353">
       <mxCell style="triangle;whiteSpace=wrap;html=1;strokeColor=#FFFFFF;fillColor=#00FF00;fontSize=40;fontColor=#FFFFFF;rotation=90;" parent="Rzk559V0BYMHQ7gyap36-1" vertex="1">
         <mxGeometry x="4435" y="1220.5" width="60" height="50" as="geometry"/>
       </mxCell>
     </object>
-    <object label="" uid="supplysector2" id="Rzk559V0BYMHQ7gyap36-354">
+    <object label="" uid="supplysector2" type="trigger" id="Rzk559V0BYMHQ7gyap36-354">
       <mxCell style="triangle;whiteSpace=wrap;html=1;strokeColor=#FFFFFF;fillColor=#00FF00;fontSize=40;fontColor=#FFFFFF;rotation=90;" parent="Rzk559V0BYMHQ7gyap36-1" vertex="1">
         <mxGeometry x="4618" y="1219.5" width="60" height="50" as="geometry"/>
       </mxCell>
@@ -122,7 +122,7 @@
         <mxPoint x="4646.452497209822" y="901.1428571428571" as="targetPoint"/>
       </mxGeometry>
     </mxCell>
-    <object label="" uid="wirein" id="Rzk559V0BYMHQ7gyap36-364">
+    <object label="" uid="supplysector-1" type="trigger" id="Rzk559V0BYMHQ7gyap36-364">
       <mxCell style="triangle;whiteSpace=wrap;html=1;strokeColor=#FFFFFF;fillColor=#00FF00;fontSize=40;fontColor=#FFFFFF;rotation=90;" parent="Rzk559V0BYMHQ7gyap36-1" vertex="1">
         <mxGeometry x="4530.952497209822" y="1276.642857142857" width="60" height="50" as="geometry"/>
       </mxCell>
@@ -130,7 +130,7 @@
     <mxCell id="Rzk559V0BYMHQ7gyap36-365" value="入段线" style="text;html=1;strokeColor=none;fillColor=none;align=center;verticalAlign=middle;whiteSpace=wrap;rounded=0;fontColor=#FFFFFF;fontSize=40;fontStyle=1" parent="Rzk559V0BYMHQ7gyap36-1" vertex="1">
       <mxGeometry x="4533.952497209822" y="1402.642857142857" width="39" height="93" as="geometry"/>
     </mxCell>
-    <object label="" uid="supplysector3" id="Rzk559V0BYMHQ7gyap36-367">
+    <object label="" uid="supplysector3" type="trigger" id="Rzk559V0BYMHQ7gyap36-367">
       <mxCell style="triangle;whiteSpace=wrap;html=1;strokeColor=#FFFFFF;fillColor=#00FF00;fontSize=40;fontColor=#FFFFFF;rotation=90;" parent="Rzk559V0BYMHQ7gyap36-1" vertex="1">
         <mxGeometry x="4734" y="1219.5" width="60" height="50" as="geometry"/>
       </mxCell>
@@ -138,7 +138,7 @@
     <mxCell id="Rzk559V0BYMHQ7gyap36-368" value="供电分区3" style="text;html=1;strokeColor=none;fillColor=none;align=center;verticalAlign=middle;whiteSpace=wrap;rounded=0;fontColor=#FFFFFF;fontSize=40;fontStyle=1" parent="Rzk559V0BYMHQ7gyap36-1" vertex="1">
       <mxGeometry x="4743" y="1287" width="39" height="244" as="geometry"/>
     </mxCell>
-    <object label="" uid="supplysector6" id="Rzk559V0BYMHQ7gyap36-369">
+    <object label="" uid="supplysector6" type="trigger" id="Rzk559V0BYMHQ7gyap36-369">
       <mxCell style="triangle;whiteSpace=wrap;html=1;strokeColor=#FFFFFF;fillColor=#00FF00;fontSize=40;fontColor=#FFFFFF;rotation=90;" parent="Rzk559V0BYMHQ7gyap36-1" vertex="1">
         <mxGeometry x="4877" y="1220.5" width="60" height="50" as="geometry"/>
       </mxCell>
@@ -149,17 +149,17 @@
     <mxCell id="Rzk559V0BYMHQ7gyap36-371" value="供电分区7" style="text;html=1;strokeColor=none;fillColor=none;align=center;verticalAlign=middle;whiteSpace=wrap;rounded=0;fontColor=#FFFFFF;fontSize=40;fontStyle=1" parent="Rzk559V0BYMHQ7gyap36-1" vertex="1">
       <mxGeometry x="5040.5" y="1284" width="39" height="244" as="geometry"/>
     </mxCell>
-    <object label="" uid="supplysector7" id="Rzk559V0BYMHQ7gyap36-372">
+    <object label="" uid="supplysector7" type="trigger" id="Rzk559V0BYMHQ7gyap36-372">
       <mxCell style="triangle;whiteSpace=wrap;html=1;strokeColor=#FFFFFF;fillColor=#00FF00;fontSize=40;fontColor=#FFFFFF;rotation=90;" parent="Rzk559V0BYMHQ7gyap36-1" vertex="1">
         <mxGeometry x="5028" y="1224.5" width="60" height="50" as="geometry"/>
       </mxCell>
     </object>
-    <object label="" uid="supplysector4" id="Rzk559V0BYMHQ7gyap36-387">
+    <object label="" uid="supplysector4" type="trigger" id="Rzk559V0BYMHQ7gyap36-387">
       <mxCell style="triangle;whiteSpace=wrap;html=1;strokeColor=#FFFFFF;fillColor=#00FF00;fontSize=40;fontColor=#FFFFFF;rotation=90;" parent="Rzk559V0BYMHQ7gyap36-1" vertex="1">
         <mxGeometry x="5170.5" y="1219.5" width="60" height="50" as="geometry"/>
       </mxCell>
     </object>
-    <object label="" uid="supplysector5" id="Rzk559V0BYMHQ7gyap36-388">
+    <object label="" uid="supplysector5" type="trigger" id="Rzk559V0BYMHQ7gyap36-388">
       <mxCell style="triangle;whiteSpace=wrap;html=1;strokeColor=#FFFFFF;fillColor=#00FF00;fontSize=40;fontColor=#FFFFFF;rotation=90;" parent="Rzk559V0BYMHQ7gyap36-1" vertex="1">
         <mxGeometry x="5321.5" y="1220.5" width="60" height="50" as="geometry"/>
       </mxCell>
@@ -182,7 +182,7 @@
     <mxCell id="Rzk559V0BYMHQ7gyap36-398" value="" style="rounded=0;whiteSpace=wrap;html=1;strokeColor=none;rotation=0;" parent="Rzk559V0BYMHQ7gyap36-395" vertex="1">
       <mxGeometry x="14" y="1" width="5" height="29" as="geometry"/>
     </mxCell>
-    <object label="" uid="wireoutroad" id="Rzk559V0BYMHQ7gyap36-399">
+    <object label="" uid="supplysector0road" id="Rzk559V0BYMHQ7gyap36-399">
       <mxCell style="endArrow=none;html=1;strokeColor=#990000;strokeWidth=6;fontSize=40;fontColor=#FFFFFF;entryX=0;entryY=0.5;entryDx=0;entryDy=0;" parent="Rzk559V0BYMHQ7gyap36-1" target="Rzk559V0BYMHQ7gyap36-396" edge="1">
         <mxGeometry width="50" height="50" relative="1" as="geometry">
           <mxPoint x="104" y="366" as="sourcePoint"/>
@@ -202,7 +202,7 @@
     <mxCell id="Rzk559V0BYMHQ7gyap36-404" value="" style="rounded=0;whiteSpace=wrap;html=1;strokeColor=none;rotation=0;" parent="Rzk559V0BYMHQ7gyap36-401" vertex="1">
       <mxGeometry x="14" y="1" width="5" height="29" as="geometry"/>
     </mxCell>
-    <object label="" uid="wireinroad" id="Rzk559V0BYMHQ7gyap36-405">
+    <object label="" uid="supplysector-1road" id="Rzk559V0BYMHQ7gyap36-405">
       <mxCell style="endArrow=none;html=1;strokeColor=#00FF00;strokeWidth=6;fontSize=40;fontColor=#FFFFFF;entryX=0;entryY=0.5;entryDx=0;entryDy=0;" parent="Rzk559V0BYMHQ7gyap36-1" target="Rzk559V0BYMHQ7gyap36-402" edge="1">
         <mxGeometry width="50" height="50" relative="1" as="geometry">
           <mxPoint x="98" y="532" as="sourcePoint"/>

@@ -18,48 +18,8 @@ class graphx {
         return window.parkequip[uid]
     }
 
-    //生成一个新的train
-    generatetrain(name) {
-        let train = window.graph.importCells([origintrain]),
-            namelabel = train[0].getSubCell('serial')[0]
-        this.setLabelText(namelabel, `<div style="color:#000;">${name}</div>`)
-        train[0].setVisible(1)
-        this.graph.refresh(train[0])
-        return train[0]
-    }
 
-
-
-
-    //计算股道的中心位置
-    calculateroadcenter(cell) {
-
-        let offset = {
-                x: this.graph.view.getState(cell).origin.x,
-                y: this.graph.view.getState(cell).origin.y
-            },
-
-            x = offset.x + cell.geometry.width / 2,
-            y = offset.y + cell.geometry.height / 2
-        return {
-            x,
-            y
-        }
-
-    }
-
-
-
-    //移动cell的中心点到cell的中心的
-    movecelltocenter(s, t) {
-
-        let target = this.calculateroadcenter(t),
-            cells = this.graph.moveCells([s], target.x - (s.geometry.x + s.geometry.width / 2), target.y - (s.geometry.y + s.geometry.height / 2), false)
-        return cells[0]
-    }
-
-
-
+    //供电分区的分区状态设置
     //设置分区线闪烁
     flashwiresector(wirename, flash) {
         let wires = parkequip[wirename.toUpperCase()]
@@ -81,7 +41,7 @@ class graphx {
     }
 
 
-
+    //供电分区的开关状态设置
     //设置edge的终点
     triggerSwitch(uid, status) {
         let switchcell = getsubk([parkequip[uid]])
@@ -136,469 +96,6 @@ class graphx {
 
         this.graph.refresh(switchcell)
     }
-
-    showcell(c) {
-        c.setVisible(1)
-        this.graph.refresh(c)
-    }
-
-    setTurnoutStatus(uid, status, nofresh) {
-        let cell = this.getEquip(uid)
-        if (!cell) return
-        cell.equipstatus = status
-        //获取零件
-        let roadentrance = cell.getSubCell('road-entrance'),
-            roaddirect = cell.getSubCell('road-direct'),
-            roadreverse = cell.getSubCell('road-reverse'),
-            reverse = cell.getSubCell('reverse'),
-            direct = cell.getSubCell('direct'),
-            namelabel = cell.getSubCell('label'),
-            boundary = cell.getSubCell('boundary')
-
-        /**
-         * 
-         * 初始化所有零件
-         * 
-         */
-        //初始化零件的闪烁状态为不闪烁
-        cell.twinkle = false
-        //重置显示颜色
-        let allparts = [reverse, direct, roadreverse, roaddirect, roadentrance]
-        allparts.map(a => {
-            a.map(i => i.setVisible(1) + this.setFillColor(i, '#3694FF', nofresh))
-        })
-        //重置lable颜色
-        namelabel.map(i => this.setLabelText(i, `<div style="background:none;color:#fff;">${uid}</div>`, nofresh))
-        //加边框显示
-        if (!boundary.length) {
-            //获取direct的坐标作为参考,创建一个圆形边框
-            let referenceposition = cell.getSubCell('reverse')[0].geometry
-            let boundaryvalue = cell.getSubCell('reverse')[0].value.cloneNode(true)
-            boundaryvalue.setAttribute('name', 'boundary')
-            let newboundary = this.graph.insertVertex(cell, null, '', referenceposition.x - 4, referenceposition.y - 8, 30, 30, "shape=ellipse;whiteSpace=wrap;html=1;aspect=fixed;strokeColor=red;fillColor=none;cursor=pointer;");
-            newboundary.value = boundaryvalue
-            newboundary.specialname = 'lock'
-            boundary.push(newboundary)
-        }
-        //隐藏边框
-        if (boundary.length) {
-            boundary.map(i => {
-                i.setVisible(0)
-            })
-        }
-
-        /**
-         * 
-         * 开始设置零件样式
-         * 
-         */
-
-        //绿色稳定显示：表示道岔此时处于定位位置；
-        if (status.pos) {
-            direct.map(i => {
-                this.setFillColor(i, '#0f0', nofresh)
-            })
-            namelabel.map(i => this.setLabelText(i, `<div style="color:#0f0;">${uid}</div>`, nofresh))
-        } else {
-            direct.map(i => {
-                i.setVisible(0)
-            })
-        }
-
-        //黄色稳定显示：表示道岔此时处于反位位置；
-        if (status.pos_reverse) {
-            reverse.map(i => {
-                this.setFillColor(i, '#ff0', nofresh)
-            })
-            namelabel.map(i => this.setLabelText(i, `<div style="color:#ff0;">${uid}</div>`, nofresh))
-        } else {
-            reverse.map(i => {
-                i.setVisible(0)
-            })
-        }
-
-        let ay = [reverse, direct]
-        ay.map(ip => {
-            ip.map(i => {
-                window.globalintervalcell.delete(i)
-            })
-        })
-        //红色闪烁显示：表示道岔已失去表示超过允许失去表示的规定时间（非特殊道岔，一般情况为30秒），此时道岔处于挤岔报警状态，
-        if (status.pos == 1 && status.pos_reverse == 1) {
-            let a = [reverse, direct]
-            a.map(ip => {
-                ip.map(i => {
-                    this.setFillColor(i, '#f00', nofresh)
-                    window.globalintervalcell.add(i)
-
-                })
-            })
-            namelabel.map(i => this.setLabelText(i, `<div style="color:#f00;">${uid}</div>`, nofresh))
-        }
-
-
-        //黑色稳定显示：表示道岔刚失去表示
-        if (status.pos == 0 && status.pos_reverse == 0) {
-            let a = [reverse, direct]
-            a.map(ip => {
-                ip.map(i => {
-                    i.setVisible(0)
-                })
-            })
-            namelabel.map(i => this.setLabelText(i, `<div style="color:#f00;">${uid}</div>`, nofresh))
-        }
-
-        //白色光带：道岔所在的轨道区段处于空闲锁闭状态
-        if (status.hold == 0 && status.lock == 1) {
-            let a = [roadentrance]
-
-            if (status.pos == 1 && status.pos_reverse == 0) {
-                a.push(roaddirect, direct)
-            }
-
-            if (status.pos == 0 && status.pos_reverse == 1) {
-                a.push(roadreverse, reverse)
-            }
-
-            a.map(ip => {
-                ip.map(i => {
-                    this.setFillColor(i, '#fff', nofresh)
-                })
-            })
-        }
-
-        //红色光带：道岔所在的轨道区段处于占用或轨道电路故障；
-        if (status.hold == 1) {
-            let a = [roadentrance]
-
-            if (status.pos == 1 && status.pos_reverse == 0) {
-                a.push(roaddirect, direct)
-            }
-
-            if (status.pos == 0 && status.pos_reverse == 1) {
-                a.push(roadreverse, reverse)
-            }
-
-            a.map(ip => {
-                ip.map(i => {
-                    this.setFillColor(i, '#f00', nofresh)
-                })
-            })
-        }
-
-        if (status.closed) {
-            namelabel.map(i => this.setLabelText(i, '<div style="border:1px solid #f00">' + i.getAttribute('label') + '</div>', nofresh))
-        }
-
-        if (status.lock_s || status.lock_protect || status.lock_gt) {
-            boundary.map(i => {
-                i.setVisible(1)
-            })
-        }
-
-
-        if (!nofresh) {
-            this.graph.refresh(cell)
-
-            if (cell.children && cell.children.length) {
-                cell.children.map(c => {
-                    if (window.graph.view.getState(c)) window.graph.view.getState(c).setCursor('pointer')
-                })
-            }
-        }
-
-    }
-
-
-    //设置供电分区
-    setSectorStatus(uid, status, nofresh) {
-        let cell = this.getEquip(uid)
-        if (!cell) return
-        cell.equipstatus = status
-        //获取零件
-        let road = cell.getSubCell('road'),
-            namelabel = cell.getSubCell('label')
-
-        /**
-         * 
-         * 初始化所有零件
-         * 
-         */
-        //初始化零件的闪烁状态为不闪烁
-        cell.twinkle = false
-
-        //重置显示颜色
-        let allparts = [road]
-        allparts.map(a => {
-            //空闲蓝色
-            a.map(i => i.setVisible(1) + this.setFillColor(i, '#3694FF', nofresh))
-        })
-        //重置lable颜色
-        namelabel.map(i => this.setLabelText(i, `<div style="background:none;color:#fff;">${uid}</div>`, nofresh))
-
-
-        /**
-         * 
-         * 开始设置零件样式
-         * 
-         */
-
-
-        //白色光带：道岔所在的轨道区段处于空闲锁闭状态
-        if (status.hold == 0 && status.lock == 1) {
-            road.map(i => {
-                this.setFillColor(i, '#fff', nofresh)
-            })
-        }
-
-
-        //红色光带：表示区段为占用状态或区段轨道电路故障；
-        if (status.hold == 1) {
-            road.map(i => {
-                this.setFillColor(i, '#f00', nofresh)
-            })
-        }
-
-        //在原有区段状态上下增加粉红色线框的光带：表示区段被人工设置为轨道分路不良标记。
-        if (status.badness == 1) {
-            road.map(i => {
-                this.setStrokeColor(i, '#ff9393', nofresh)
-            })
-        }
-
-        if (!nofresh) {
-            this.graph.refresh(cell)
-
-            if (cell.children && cell.children.length) {
-                cell.children.map(c => {
-                    if (window.graph.view.getState(c)) window.graph.view.getState(c).setCursor('pointer')
-                })
-            }
-        }
-    }
-
-    setSignalStatus(uid, status, nofresh) {
-        let cell = this.getEquip(uid)
-        if (!cell) return
-        cell.equipstatus = status
-        //获取零件
-        let light = cell.getSubCell('light'),
-            button = cell.getSubCell('button'),
-            namelabel = cell.getSubCell('label'),
-            boundary = cell.getSubCell('boundary')
-
-        /**
-         * 
-         * 初始化所有零件
-         * 
-         */
-        //初始化零件的闪烁状态为不闪烁
-        cell.twinkle = false
-        //重置显示颜色
-        light.map(i => i.setVisible(1) + this.setFillColor(i, '#000', nofresh))
-        //重置lable颜色
-        namelabel.map(i => this.setLabelText(i, `<div style="background:none;color:#fff;">${uid}</div>`, nofresh))
-
-        //加边框显示
-        if (!boundary.length) {
-
-            //获取调车灯坐标作为参考,创建一个叉
-            let lightda = light.find(i => i.getAttribute('type') == 'da')
-            if (lightda) {
-                let referenceposition = lightda.geometry
-                let boundaryvalue = lightda.value.cloneNode(true)
-                boundaryvalue.setAttribute('name', 'boundary')
-                let newboundary = this.graph.insertVertex(cell, null, '', referenceposition.x + 3, referenceposition.y + 3, 14, 14, "shape=umlDestroy;whiteSpace=wrap;html=1;aspect=fixed;strokeColor=red;fillColor=none;cursor=pointer;");
-                newboundary.value = boundaryvalue
-                boundary.push(newboundary)
-            }
-            //方框
-            if (lightda) {
-                let referenceposition = lightda.geometry
-                let boundaryvalue = lightda.value.cloneNode(true)
-                boundaryvalue.setAttribute('name', 'boundary')
-                let newboundary = this.graph.insertVertex(cell, null, '', referenceposition.x, referenceposition.y, 19, 19, "whiteSpace=wrap;html=1;aspect=fixed;strokeColor=red;fillColor=none;cursor=pointer;");
-                newboundary.value = boundaryvalue
-                newboundary.specialname = 'rect'
-                boundary.push(newboundary)
-            }
-
-            //获取列车信号坐标作为参考,创建一个叉
-            lightda = light.find(i => i.getAttribute('type') != 'da')
-            if (lightda) {
-                let referenceposition = lightda.geometry
-                let boundaryvalue = lightda.value.cloneNode(true)
-                boundaryvalue.setAttribute('name', 'boundary')
-                let newboundary = this.graph.insertVertex(cell, null, '', referenceposition.x + 3, referenceposition.y + 3, 14, 14, "shape=umlDestroy;whiteSpace=wrap;html=1;aspect=fixed;strokeColor=red;fillColor=none;cursor=pointer;");
-                newboundary.value = boundaryvalue
-                boundary.push(newboundary)
-            }
-            //方框
-            if (lightda) {
-                let referenceposition = lightda.geometry
-                let boundaryvalue = lightda.value.cloneNode(true)
-                boundaryvalue.setAttribute('name', 'boundary')
-                let newboundary = this.graph.insertVertex(cell, null, '', referenceposition.x, referenceposition.y, 19, 19, "whiteSpace=wrap;html=1;aspect=fixed;strokeColor=red;fillColor=none;cursor=pointer;");
-                newboundary.value = boundaryvalue
-                newboundary.specialname = 'rect'
-                boundary.push(newboundary)
-            }
-
-
-            //获取列车信号按钮坐标作为参考,创建一个叉
-            lightda = button.find(i => i.getAttribute('type') == 'la')
-            if (lightda) {
-                let referenceposition = lightda.geometry
-                let boundaryvalue = lightda.value.cloneNode(true)
-                boundaryvalue.setAttribute('name', 'boundary')
-                let newboundary = this.graph.insertVertex(cell, null, '', referenceposition.x, referenceposition.y, 14, 14, "shape=umlDestroy;whiteSpace=wrap;html=1;aspect=fixed;strokeColor=red;fillColor=none;cursor=pointer;");
-                newboundary.value = boundaryvalue
-                boundary.push(newboundary)
-            }
-
-            //获取引导按钮坐标作为参考,创建一个叉
-            lightda = button.find(i => i.getAttribute('type') == 'ya')
-            if (lightda) {
-                let referenceposition = lightda.geometry
-                let boundaryvalue = lightda.value.cloneNode(true)
-                boundaryvalue.setAttribute('name', 'boundary')
-                let newboundary = this.graph.insertVertex(cell, null, '', referenceposition.x, referenceposition.y, 14, 14, "shape=umlDestroy;whiteSpace=wrap;html=1;aspect=fixed;strokeColor=red;fillColor=none;cursor=pointer;");
-                newboundary.value = boundaryvalue
-                boundary.push(newboundary)
-            }
-
-
-
-        }
-        // 隐藏边框
-        if (boundary.length) {
-            boundary.map(i => {
-                i.setVisible(0)
-            })
-        }
-
-        /**
-         * 
-         * 开始设置零件样式
-         * 
-         */
-
-        if (status.red_blue) {
-
-
-            let lightda = light.find(i => i.getAttribute('type') == 'da')
-            let light0 = light.find(i => i.getAttribute('type') != 'da')
-
-
-            if (lightda) this.setFillColor(lightda, '#f00', nofresh)
-
-            if ((/^D\d*/i).test(status.name)) {
-                if (lightda) this.setFillColor(lightda, '#00f', nofresh)
-                if (light0) this.setFillColor(light0, '#00f', nofresh)
-                if (status.name.toLowerCase() == 'd16') {
-                    if (lightda) this.setFillColor(lightda, '#f00', nofresh)
-                    if (light0) this.setFillColor(light0, '#f00', nofresh)
-                }
-
-            }
-
-        }
-
-        if (status.white) {
-
-            let lightda = light.find(i => i.getAttribute('type') == 'da')
-            if (lightda) this.setFillColor(lightda, '#fff', nofresh)
-
-        }
-
-        if (status.yellow) {
-
-            let buttonla = button.find(i => i.getAttribute('type') == 'la')
-            let light0 = light.find(i => i.getAttribute('type') != 'da')
-            if (buttonla) this.setFillColor(light0, '#ff0', nofresh)
-
-        }
-
-        if (status.yellow_twice) {
-
-        }
-
-        if (status.green_yellow) {
-
-        }
-
-        if (status.green) {
-
-            let buttonla = button.find(i => i.getAttribute('type') == 'la')
-            let light0 = light.find(i => i.getAttribute('type') != 'da')
-            if (buttonla) this.setFillColor(light0, '#0f0', nofresh)
-
-
-        }
-
-        if (status.red_white) {
-
-            let lightda = light.find(i => i.getAttribute('type') == 'da')
-            let light0 = light.find(i => i.getAttribute('type') != 'da')
-            if (lightda) this.setFillColor(lightda, '#f00', nofresh)
-            if (light0) this.setFillColor(light0, '#ff0', nofresh)
-        }
-
-        if (status.green_twice) {
-
-        }
-
-        if (true) {
-            let buttonla = button.find(i => i.getAttribute('type') == 'la')
-            let lightda = light.find(i => i.getAttribute('type') == 'da')
-            let light0 = light.find(i => i.getAttribute('type') != 'da')
-            window.globalintervalcell.delete(buttonla)
-            window.globalintervalcell.delete(lightda)
-            window.globalintervalcell.delete(light0)
-        }
-
-        if (status.train_btn_flash) {
-            let buttonla = button.find(i => i.getAttribute('type') == 'la')
-            if (buttonla) window.globalintervalcell.add(buttonla)
-        }
-
-        if (status.ligth_broken_wire) {
-
-            let lightda = light.find(i => i.getAttribute('type') == 'da')
-            if (lightda) window.globalintervalcell.add(lightda)
-
-        }
-
-        if (status.shunt_btn_light) {
-            let lightda = light.find(i => i.getAttribute('type') == 'da')
-            if (lightda) window.globalintervalcell.add(lightda)
-        }
-
-        if (status.flash) {
-
-        }
-
-        if (status.closed) {
-            boundary.map(i => {
-                if (i.specialname == 'rect') i.setVisible(1)
-            })
-        }
-
-
-        if (!nofresh) {
-            this.graph.refresh(cell)
-
-            if (cell.children && cell.children.length) {
-                cell.children.map(c => {
-                    if (window.graph.view.getState(c)) window.graph.view.getState(c).setCursor('pointer')
-                })
-            }
-        }
-    }
-
-
-
-
 
     //设置零件闪烁fillcolor
     flashcellcolor(cell, c1, c2) {
@@ -691,7 +188,8 @@ window.globalinterval = setInterval(() => {
         this.graph.refresh(cell)
     }
 
-}, 400);/**
+}, 400);
+/**
  * 
  * 拓展一个cell的方法，遍历获取cell下级的cell,通过property的中的name获取
  * 
@@ -897,13 +395,8 @@ mxUtils.getAll([bundle, STYLE_PATH + '/default.xml', defualtxmldoc], function (x
         let cell = window.graph.getModel().cells[i]
 
 
-     
 
-        //隐藏train的图例
-        if (cell.getAttribute('type') == 'train') {
-            origintrain = cell
-            cell.setVisible(0)
-        }
+
 
         //如果发现uid属性则加入全局存放
         if (cell.getAttribute('uid')) {
@@ -918,20 +411,7 @@ mxUtils.getAll([bundle, STYLE_PATH + '/default.xml', defualtxmldoc], function (x
 
         }
 
-        if (cell.getAttribute('belongsector') && !cell.children) {
-            cell.setAttribute('label', cell.getAttribute('belongsector').toUpperCase())
-            window.parkequip[cell.getAttribute('belongsector')] = cell
-            //默认隐藏
-            cell.setVisible(0)
-        }
 
-        //给带有name属性的cell添加手势
-        if (cell.getAttribute('name')) {
-            setTimeout(i => {
-                if (window.graph.view.getState(cell)) window.graph.view.getState(cell).setCursor('pointer')
-            }, 0)
-
-        }
 
     }
 
@@ -939,47 +419,28 @@ mxUtils.getAll([bundle, STYLE_PATH + '/default.xml', defualtxmldoc], function (x
     //注册graph的鼠标事件处理
     window.graph.addMouseListener({
         mouseDown: function (sender, evt) {
-
             //过滤鼠标右键
-            if (evt.evt.button == 2) return
-            //过滤非点击区域
-            if (evt.sourceState) {
+            if (evt.evt.button == 2) {
+                //过滤非点击区域
+                if (evt.sourceState) {
+                    if (getEquipCell(evt.sourceState.cell)) {
+                        if (getEquipCell(evt.sourceState.cell).value.getAttribute('uid').toLowerCase().indexOf('supplysector') > -1 || getEquipCell(evt.sourceState.cell).value.getAttribute('type').toLowerCase() == 'trigger') {
+                            window.outage = getEquipCell(evt.sourceState.cell).value.getAttribute('uid').toLowerCase().match(/-?\d/)[0]
 
-                if (getCellUid(evt.sourceState.cell)) {
-                    //把点击按钮和部件发送给graphAction处理
-                    window.graphAction.buttonClick({
-                        cell: getEquipCell(evt.sourceState.cell),
-                        type: getEquipCell(evt.sourceState.cell).getAttribute('type')
-                    }, {
-                        name: evt.sourceState.cell.getAttribute('name'),
-                        uindex: equipcellindex[evt.sourceState.cell.id] ? equipcellindex[evt.sourceState.cell.id] : equipcellindex[getEquipCell(evt.sourceState.cell).id],
-                        type: evt.sourceState.cell.getAttribute('type')
-                    }, evt.evt)
-                }
+                            let cbinterval = setInterval(() => {
+                                if (window.context2cb) {
+                                    context2cb(evt.evt)
+                                    clearInterval(cbinterval)
+                                }
+                            }, 10);
 
-                //如果是道岔区段和道岔
-                let belongsectors = false,
-                    cqid = 0
-                for (let i in window.graphAction.switchbelongsector) {
-                    if (window.graphAction.switchbelongsector[i].includes(Number(getCellUid(evt.sourceState.cell)))) {
-                        belongsectors = true
-                        cqid = i
-                        break
+                        }
                     }
-                }
 
-                if (belongsectors) {
-                    window.graphAction.buttonClick({
-                        uid: cqid,
-                        type: 'cq'
-                    }, {}, evt.evt)
-                } else if (evt.sourceState.cell.getAttribute('belongsector')) {
-                    window.graphAction.buttonClick({
-                        uid: evt.sourceState.cell.getAttribute('belongsector'),
-                        type: 'cq'
-                    }, {}, evt.evt)
+
                 }
             }
+
             mxLog.debug('mouseDown');
         },
         mouseMove: function (sender, evt) {
@@ -1013,3 +474,37 @@ mxUtils.getAll([bundle, STYLE_PATH + '/default.xml', defualtxmldoc], function (x
         '<center style="margin-top:10%;">Error loading resource files. Please check browser console.</center>';
 });
 
+//右键菜单配置
+
+$(document).ready(function () {
+    context.init({
+        preventDoubleContext: false
+    });
+    //给不同占线右键添加action
+    context.attach('svg', [{
+        text: '断电信息同步至占线板',
+        action: function (e) {
+            e.preventDefault()
+            if (window.outage) {
+                console.log(outage)
+            }
+
+        }
+    }]);
+    $(document).on('mouseover', '.me-codesta', function () {
+        $('.finale h1:first').css({
+            opacity: 0
+        });
+        $('.finale h1:last').css({
+            opacity: 1
+        });
+    });
+    $(document).on('mouseout', '.me-codesta', function () {
+        $('.finale h1:last').css({
+            opacity: 0
+        });
+        $('.finale h1:first').css({
+            opacity: 1
+        });
+    });
+});

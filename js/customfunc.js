@@ -158,12 +158,23 @@ class graphx {
 
 
         if (status.preline_blue_belt) {
-            let a = [roadentrance, roadreverse, roaddirect]
+            //取消预排蓝光带，改为显示挤岔0401
+            // let a = [roadentrance, roadreverse, roaddirect]
+            // a.map(ip => {
+            //     ip.map(i => {
+            //         this.setFillColor(i, '#00f', nofresh)
+            //     })
+            // })
+            //挤岔
+            let a = [reverse, direct]
             a.map(ip => {
                 ip.map(i => {
-                    this.setFillColor(i, '#00f', nofresh)
+                    this.setFillColor(i, '#f00', nofresh)
+                    window.globalintervalcell.add(i)
+
                 })
             })
+            namelabel.map(i => this.setLabelText(i, `<div style="color:#f00;">${uid}</div>`, nofresh))
         }
 
         //绿色稳定显示：表示道岔此时处于定位位置；
@@ -608,37 +619,32 @@ class graphx {
         }
 
         //信号机方框显示 0,1,2,3
-        switch (status.signal_square) {
-            case 0:
-                break
-            case 1:
-                //全部灯加白色框
-                boundary.map(i => {
-                    if (i.value.getAttribute('name') == 'boundary' && (i.value.getAttribute('type') == 'da' || !i.value.getAttribute('type'))) {
-                        i.setVisible(1)
-                        this.setStrokeColor(i, 'white', nofresh)
-                    }
-                })
-                break
-            case 2:
-                //全部灯加黄色框
-                boundary.map(i => {
-                    if (i.value.getAttribute('name') == 'boundary' && (i.value.getAttribute('type') == 'da' || !i.value.getAttribute('type'))) {
-                        i.setVisible(1)
-                        this.setStrokeColor(i, '#ffff00', nofresh)
-                    }
-                })
-                break
-            case 3:
-                //全部灯加绿色框
-                boundary.map(i => {
-                    if (i.value.getAttribute('name') == 'boundary' && (i.value.getAttribute('type') == 'da' || !i.value.getAttribute('type'))) {
-                        i.setVisible(1)
-                        this.setStrokeColor(i, '#00ff00', nofresh)
-                    }
-                })
-                break
+
+        if(status.da_start == 1 && status.da_start == 0){
+            boundary.map(i => {
+                if (i.value.getAttribute('name') == 'boundary' && (i.value.getAttribute('type') == 'da' || !i.value.getAttribute('type'))) {
+                    i.setVisible(1)
+                    this.setStrokeColor(i, 'white', nofresh)
+                }
+            })
         }
+        if(status.da_start == 0 && status.da_start == 1){
+            boundary.map(i => {
+                if (i.value.getAttribute('name') == 'boundary' && (i.value.getAttribute('type') == 'da' || !i.value.getAttribute('type'))) {
+                    i.setVisible(1)
+                    this.setStrokeColor(i, '#ffff00', nofresh)
+                }
+            })
+        }
+        if(status.da_start == 1 && status.da_start == 1){
+            boundary.map(i => {
+                if (i.value.getAttribute('name') == 'boundary' && (i.value.getAttribute('type') == 'da' || !i.value.getAttribute('type'))) {
+                    i.setVisible(1)
+                    this.setStrokeColor(i, '#00ff00', nofresh)
+                }
+            })
+        }
+     
 
 
         if (status.red_blue) {
@@ -1410,18 +1416,20 @@ window.graphAction = {
 //闪烁
 window.globalintervalcell = new Set()
 window.globalinterval = setInterval(() => {
-    if (window.globalupdata || globalintervalcell.size) {
+    if (window.globalupdata || !globalintervalcell.size) {
         return
     }
-
+    let model = window.graph.getModel()
+    
     for (let cell of globalintervalcell) {
         cell.visible = !cell.visible
-        setTimeout(x => {
-            window.graph.refresh(cell)
-        }, 30)
+        window.graph.refresh(cell)
     }
 
-}, 1500);
+   
+    
+
+}, 900);
 
 //获取cell
 window.getCellUid = cell => {
