@@ -1414,22 +1414,19 @@ window.graphAction = {
  */
 
 //闪烁
+let globalintervalcellflashkey = 0
 window.globalintervalcell = new Set()
 window.globalinterval = setInterval(() => {
     if (window.globalupdata || !globalintervalcell.size) {
         return
     }
-    let model = window.graph.getModel()
     
     for (let cell of globalintervalcell) {
-        cell.visible = !cell.visible
-        window.graph.refresh(cell)
+        //使用mxgraphmodel来对cell进行更新会直接刷新界面，效率更高
+        window.graph.model.setVisible(cell,globalintervalcellflashkey)
     }
-
-   
-    
-
-}, 900);
+    globalintervalcellflashkey = !globalintervalcellflashkey
+}, 500);
 
 //获取cell
 window.getCellUid = cell => {
