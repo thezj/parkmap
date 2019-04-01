@@ -1757,7 +1757,12 @@ let loadmap = mapname => {
         }
     })
     //战场图的xml
-    window.defualtxmldoc = `/${mapname}/station.xml`
+    if (location.href.split('?').includes('test')) {
+        window.defualtxmldoc = `/${mapname}/station2.xml`
+    } else {
+        window.defualtxmldoc = `/${mapname}/station.xml`
+
+    }
     //按钮表
     $.ajax({
         url: `/${mapname}/mapbuttonindex.json`,

@@ -521,7 +521,7 @@ Editor.prototype.updateGraphComponents = function () {
 
 	if (graph.container != null) {
 		graph.view.validateBackground();
-		graph.container.style.overflow = (graph.scrollbars) ? 'auto' : 'hidden';
+		graph.container.style.overflow = 'hidden';
 
 		this.fireEvent(new mxEventObject('updateGraphComponents'));
 	}
