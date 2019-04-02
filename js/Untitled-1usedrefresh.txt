@@ -75,7 +75,7 @@ class graphx {
     }
 
 
-    setTrainStatus(alls, status, cindex) {
+    setTrainStatus(alls, status, nofresh, cindex) {
 
         //为每个车创建容器
         let vesselid = 'V' + status.name
@@ -121,7 +121,7 @@ class graphx {
         document.querySelector('.alarmplane').scrollTop = 10000
     }
 
-    setTurnoutStatus(uid, status) {
+    setTurnoutStatus(uid, status, nofresh) {
         let cell = this.getEquip(uid)
         if (!cell) return
         cell.equipstatus = status
@@ -143,15 +143,15 @@ class graphx {
         //重置显示颜色
         let allparts = [reverse, direct, roadreverse, roaddirect, roadentrance]
         allparts.map(a => {
-            a.map(i => window.graph.model.setVisible(i, 1) + this.setFillColor(i, '#5578b6'))
+            a.map(i => i.setVisible(1) + this.setFillColor(i, '#5578b6', nofresh))
         })
         //重置lable颜色
-        namelabel.map(i => this.setLabelText(i, `<div style="background:none;color:#fff;">${uid}</div>`))
+        namelabel.map(i => this.setLabelText(i, `<div style="background:none;color:#fff;">${uid}</div>`, nofresh))
 
         //隐藏边框
         if (boundary.length) {
             boundary.map(i => {
-                window.graph.model.setVisible(i, 0)
+                i.setVisible(0)
             })
         }
         let ay = [reverse, direct]
@@ -175,42 +175,42 @@ class graphx {
             // let a = [roadentrance, roadreverse, roaddirect]
             // a.map(ip => {
             //     ip.map(i => {
-            //         this.setFillColor(i, '#00f')
+            //         this.setFillColor(i, '#00f', nofresh)
             //     })
             // })
             //挤岔
             let a = [reverse, direct]
             a.map(ip => {
                 ip.map(i => {
-                    this.setFillColor(i, '#f00')
+                    this.setFillColor(i, '#f00', nofresh)
                     window.globalintervalcell.add(i)
 
                 })
             })
-            namelabel.map(i => this.setLabelText(i, `<div style="color:#f00;">${uid}</div>`))
+            namelabel.map(i => this.setLabelText(i, `<div style="color:#f00;">${uid}</div>`, nofresh))
         }
 
         //绿色稳定显示：表示道岔此时处于定位位置；
         if (status.pos) {
             direct.map(i => {
-                this.setFillColor(i, '#0f0')
+                this.setFillColor(i, '#0f0', nofresh)
             })
-            namelabel.map(i => this.setLabelText(i, `<div style="color:#0f0;">${uid}</div>`))
+            namelabel.map(i => this.setLabelText(i, `<div style="color:#0f0;">${uid}</div>`, nofresh))
         } else {
             direct.map(i => {
-                window.graph.model.setVisible(i, 0)
+                i.setVisible(0)
             })
         }
 
         //黄色稳定显示：表示道岔此时处于反位位置；
         if (status.pos_reverse) {
             reverse.map(i => {
-                this.setFillColor(i, '#ff0')
+                this.setFillColor(i, '#ff0', nofresh)
             })
-            namelabel.map(i => this.setLabelText(i, `<div style="color:#ff0;">${uid}</div>`))
+            namelabel.map(i => this.setLabelText(i, `<div style="color:#ff0;">${uid}</div>`, nofresh))
         } else {
             reverse.map(i => {
-                window.graph.model.setVisible(i, 0)
+                i.setVisible(0)
             })
         }
 
@@ -220,12 +220,12 @@ class graphx {
             let a = [reverse, direct]
             a.map(ip => {
                 ip.map(i => {
-                    this.setFillColor(i, '#f00')
+                    this.setFillColor(i, '#f00', nofresh)
                     window.globalintervalcell.add(i)
 
                 })
             })
-            namelabel.map(i => this.setLabelText(i, `<div style="color:#f00;">${uid}</div>`))
+            namelabel.map(i => this.setLabelText(i, `<div style="color:#f00;">${uid}</div>`, nofresh))
         }
 
 
@@ -234,10 +234,10 @@ class graphx {
             let a = [reverse, direct]
             a.map(ip => {
                 ip.map(i => {
-                    window.graph.model.setVisible(i, 0)
+                    i.setVisible(0)
                 })
             })
-            namelabel.map(i => this.setLabelText(i, `<div style="color:#f00;">${uid}</div>`))
+            namelabel.map(i => this.setLabelText(i, `<div style="color:#f00;">${uid}</div>`, nofresh))
         }
 
         //白色光带：道岔所在的轨道区段处于空闲锁闭状态
@@ -254,7 +254,7 @@ class graphx {
 
             a.map(ip => {
                 ip.map(i => {
-                    this.setFillColor(i, '#fff')
+                    this.setFillColor(i, '#fff', nofresh)
                 })
             })
         }
@@ -273,21 +273,20 @@ class graphx {
 
             a.map(ip => {
                 ip.map(i => {
-                    this.setFillColor(i, '#f00')
+                    this.setFillColor(i, '#f00', nofresh)
                 })
             })
         }
 
         if (status.closed) {
-            namelabel.map(i => this.setLabelText(i, '<div style="border:1px solid #f00">' + i.getAttribute('label') + '</div>'))
+            namelabel.map(i => this.setLabelText(i, '<div style="border:1px solid #f00">' + i.getAttribute('label') + '</div>', nofresh))
         }
 
         if (status.lock_s || status.lock_protect || status.lock_gt) {
             boundary.map(i => {
-                window.graph.model.setVisible(i, 1)
+                i.setVisible(1)
             })
         }
-
 
         if (status.notice != 0) {
 
@@ -353,16 +352,26 @@ class graphx {
         }
 
 
+        if (!nofresh) {
+            this.graph.refresh(cell)
+
+            if (cell.children && cell.children.length) {
+                cell.children.map(c => {
+                    if (window.graph.view.getState(c)) window.graph.view.getState(c).setCursor('pointer')
+                })
+            }
+        }
 
     }
 
     showcell(c) {
         if (c && c.setVisible) {
-            window.graph.model.setVisible(c, 1)
+            c.setVisible(1)
+            this.graph.refresh(c)
         }
     }
 
-    setSectorStatus(uid, status) {
+    setSectorStatus(uid, status, nofresh) {
         let cell = this.getEquip(uid)
         if (!cell) return
         cell.equipstatus = status
@@ -381,10 +390,10 @@ class graphx {
         let allparts = [road]
         allparts.map(a => {
             //空闲蓝色
-            a.map(i => window.graph.model.setVisible(i, 1) + this.setFillColor(i, '#5578b6'))
+            a.map(i => i.setVisible(1) + this.setFillColor(i, '#5578b6', nofresh))
         })
         //重置lable颜色
-        namelabel.map(i => this.setLabelText(i, `<div style="background:none;color:#fff;">${uid}</div>`))
+        namelabel.map(i => this.setLabelText(i, `<div style="background:none;color:#fff;">${uid}</div>`, nofresh))
 
 
         /**
@@ -399,7 +408,7 @@ class graphx {
         //白色光带：道岔所在的轨道区段处于空闲锁闭状态
         if (status.hold == 0 && status.lock == 1) {
             road.map(i => {
-                this.setFillColor(i, '#fff')
+                this.setFillColor(i, '#fff', nofresh)
             })
         }
 
@@ -407,18 +416,16 @@ class graphx {
         //红色光带：表示区段为占用状态或区段轨道电路故障；
         if (status.hold == 1) {
             road.map(i => {
-                this.setFillColor(i, '#f00')
+                this.setFillColor(i, '#f00', nofresh)
             })
         }
 
         //在原有区段状态上下增加粉红色线框的光带：表示区段被人工设置为轨道分路不良标记。
         if (status.badness == 1) {
             road.map(i => {
-                this.setStrokeColor(i, '#ff9393')
+                this.setStrokeColor(i, '#ff9393', nofresh)
             })
         }
-     
-
         if (status.notice != 0) {
 
             switch (status.notice) {
@@ -455,11 +462,18 @@ class graphx {
             }
         }
 
+        if (!nofresh) {
+            this.graph.refresh(cell)
 
-
+            if (cell.children && cell.children.length) {
+                cell.children.map(c => {
+                    if (window.graph.view.getState(c)) window.graph.view.getState(c).setCursor('pointer')
+                })
+            }
+        }
     }
 
-    setLightStatus(uid, status) {
+    setLightStatus(uid, status, nofresh) {
 
         //不在graph上的dom控制
 
@@ -502,32 +516,32 @@ class graphx {
         this.showcell(lighto)
 
         if (status.light) {
-            this.setFillColor(lighto, '#0f0')
+            this.setFillColor(lighto, '#0f0', nofresh)
         } else {
-            this.setFillColor(lighto, '#000')
+            this.setFillColor(lighto, '#000', nofresh)
         }
 
         if (status.yellow2) {
-            this.setFillColor(lighto, '#ff0')
+            this.setFillColor(lighto, '#ff0', nofresh)
         }
 
         if (status.white) {
-            this.setFillColor(lighto, '#fff')
+            this.setFillColor(lighto, '#fff', nofresh)
         }
         if (status.blue) {
-            this.setFillColor(lighto, '#00f')
+            this.setFillColor(lighto, '#00f', nofresh)
         }
 
         if (status.green) {
-            this.setFillColor(lighto, '#0f0')
+            this.setFillColor(lighto, '#0f0', nofresh)
         }
 
         if (status.yellow) {
-            this.setFillColor(lighto, '#ff0')
+            this.setFillColor(lighto, '#ff0', nofresh)
         }
 
         if (status.red) {
-            this.setFillColor(lighto, '#f00')
+            this.setFillColor(lighto, '#f00', nofresh)
         }
 
         if (status.flash) {
@@ -537,7 +551,7 @@ class graphx {
 
     }
 
-    setSignalStatus(uid, status) {
+    setSignalStatus(uid, status, nofresh) {
         let cell = this.getEquip(uid)
         if (!cell) return
         cell.equipstatus = status
@@ -559,12 +573,12 @@ class graphx {
             if (!!i.getAttribute('defaultcolor') && !window['cellseparatecolor' + i.id]) {
                 window['cellseparatecolor' + i.id] = i.getAttribute('defaultcolor')
             }
-            this.setFillColor(i, window['cellseparatecolor' + i.id])
-            this.setStrokeColor(i, '#5578b6')
+            this.setFillColor(i, window['cellseparatecolor' + i.id], nofresh)
+            this.setStrokeColor(i, '#5578b6', nofresh)
 
         })
         //重置lable颜色
-        namelabel.map(i => this.setLabelText(i, `<div style="background:none;color:#fff;">${uid}</div>`))
+        namelabel.map(i => this.setLabelText(i, `<div style="background:none;color:#fff;">${uid}</div>`, nofresh))
         let buttonla = button.find(i => i.getAttribute('type') == 'la')
         let lightda = light.find(i => i.getAttribute('type') == 'da')
         let light0 = light.find(i => i.getAttribute('type') != 'da')
@@ -654,8 +668,8 @@ class graphx {
         // 隐藏边框
         if (boundary.length) {
             boundary.map(i => {
-                this.setStrokeColor(i, 'red')
-                window.graph.model.setVisible(i, 0)
+                this.setStrokeColor(i, 'red', nofresh)
+                i.setVisible(0)
             })
         }
 
@@ -700,14 +714,14 @@ class graphx {
                 //有列车按钮就全部按钮红叉
                 boundary.map(i => {
                     if (i.value.getAttribute('name') == 'fork' && (i.value.getAttribute('type') == 'la' || i.value.getAttribute('type') == 'ya')) {
-                        window.graph.model.setVisible(i, 1)
+                        i.setVisible(1)
                     }
                 })
             } else {
                 //没有列车就就把车灯红框
                 boundary.map(i => {
                     if (i.value.getAttribute('name') == 'boundary' && (i.value.getAttribute('type') == 'da' || !i.value.getAttribute('type'))) {
-                        window.graph.model.setVisible(i, 1)
+                        i.setVisible(1)
                     }
                 })
             }
@@ -720,24 +734,24 @@ class graphx {
         if (status.da_start == 1 && status.da_start == 0) {
             boundary.map(i => {
                 if (i.value.getAttribute('name') == 'boundary' && (i.value.getAttribute('type') == 'da' || !i.value.getAttribute('type'))) {
-                    window.graph.model.setVisible(i, 1)
-                    this.setStrokeColor(i, 'white')
+                    i.setVisible(1)
+                    this.setStrokeColor(i, 'white', nofresh)
                 }
             })
         }
         if (status.da_start == 0 && status.da_start == 1) {
             boundary.map(i => {
                 if (i.value.getAttribute('name') == 'boundary' && (i.value.getAttribute('type') == 'da' || !i.value.getAttribute('type'))) {
-                    window.graph.model.setVisible(i, 1)
-                    this.setStrokeColor(i, '#ffff00')
+                    i.setVisible(1)
+                    this.setStrokeColor(i, '#ffff00', nofresh)
                 }
             })
         }
         if (status.da_start == 1 && status.da_start == 1) {
             boundary.map(i => {
                 if (i.value.getAttribute('name') == 'boundary' && (i.value.getAttribute('type') == 'da' || !i.value.getAttribute('type'))) {
-                    window.graph.model.setVisible(i, 1)
-                    this.setStrokeColor(i, '#00ff00')
+                    i.setVisible(1)
+                    this.setStrokeColor(i, '#00ff00', nofresh)
                 }
             })
         }
@@ -747,8 +761,8 @@ class graphx {
         if (status.red_blue) {
 
             light.find(i => {
-                this.setFillColor(i, window['cellseparatecolor' + i.id])
-                this.setStrokeColor(i, window['cellseparatecolor' + i.id])
+                this.setFillColor(i, window['cellseparatecolor' + i.id], nofresh)
+                this.setStrokeColor(i, window['cellseparatecolor' + i.id], nofresh)
             })
 
         }
@@ -756,8 +770,8 @@ class graphx {
         if (status.white) {
 
             let lightda = light.find(i => i.getAttribute('type') == 'da')
-            if (lightda) this.setFillColor(lightda, '#fff')
-            if (lightda) this.setStrokeColor(lightda, '#fff')
+            if (lightda) this.setFillColor(lightda, '#fff', nofresh)
+            if (lightda) this.setStrokeColor(lightda, '#fff', nofresh)
 
         }
 
@@ -766,10 +780,10 @@ class graphx {
             let buttonla = button.find(i => i.getAttribute('type') == 'la')
             let light0 = light.find(i => i.getAttribute('type') != 'da')
             let light1 = light.find(i => i.getAttribute('type') == 'da')
-            if (buttonla) this.setFillColor(light0, '#ff0')
-            if (buttonla) this.setStrokeColor(light0, '#ff0')
-            if (buttonla) this.setFillColor(light1, '#000')
-            if (buttonla) this.setStrokeColor(light1, 'none')
+            if (buttonla) this.setFillColor(light0, '#ff0', nofresh)
+            if (buttonla) this.setStrokeColor(light0, '#ff0', nofresh)
+            if (buttonla) this.setFillColor(light1, '#000', nofresh)
+            if (buttonla) this.setStrokeColor(light1, 'none', nofresh)
 
         }
 
@@ -784,8 +798,8 @@ class graphx {
         if (status.green) {
 
             let light0 = light.find(i => i.getAttribute('type') != 'da')
-            this.setFillColor(light0, '#0f0')
-            this.setStrokeColor(light0, '#0f0')
+            this.setFillColor(light0, '#0f0', nofresh)
+            this.setStrokeColor(light0, '#0f0', nofresh)
 
 
         }
@@ -794,10 +808,10 @@ class graphx {
 
             let lightda = light.find(i => i.getAttribute('type') == 'da')
             let light0 = light.find(i => i.getAttribute('type') != 'da')
-            if (lightda) this.setFillColor(lightda, '#f00')
-            if (light0) this.setFillColor(light0, '#ff0')
-            if (lightda) this.setStrokeColor(lightda, '#f00')
-            if (light0) this.setStrokeColor(light0, '#ff0')
+            if (lightda) this.setFillColor(lightda, '#f00', nofresh)
+            if (light0) this.setFillColor(light0, '#ff0', nofresh)
+            if (lightda) this.setStrokeColor(lightda, '#f00', nofresh)
+            if (light0) this.setStrokeColor(light0, '#ff0', nofresh)
         }
 
         if (status.green_twice) {
@@ -915,30 +929,60 @@ class graphx {
         }
 
 
+        if (!nofresh) {
+            this.graph.refresh(cell)
+            if (cell.children && cell.children.length) {
+                cell.children.map(c => {
+                    if (window.graph.view.getState(c)) window.graph.view.getState(c).setCursor('pointer')
+                })
+            }
+        }
     }
 
     //换label的文字html
-    setLabelText(cell, code) {
+    setLabelText(cell, code, nofresh) {
         cell.value.setAttribute('label', code)
+        if (!nofresh) {
+            this.graph.refresh(cell)
+        }
     }
 
 
     //换cell的背景颜色
-    setFillColor(cell, color) {
-        let s = cell.style
-        s += 'fillColor=' + color + ';'
-        graph.model.setStyle(cell, s)
+    setFillColor(cell, color, nofresh) {
+        let s = cell.style.split(';')
+        s = s.map(kv => {
+            if (kv.indexOf('fillColor') > -1) {
+                kv = 'fillColor=' + color
+            }
+            return kv
+        }).join(';')
+        if (s.indexOf('fillColor') == -1) {
+            s = s + ';fillColor=' + color
+        }
+        cell.style = s
+        if (!nofresh) {
+            this.graph.refresh(cell)
+        }
     }
 
     //换cell的边框颜色
-    setStrokeColor(cell, color) {
-        let s = cell.style
-        s += 'strokeColor=' + color + ';'
-        graph.model.setStyle(cell, s)
+    setStrokeColor(cell, color, nofresh) {
+        let s = cell.style.split(';')
+        s = s.map(kv => {
+            if (kv.indexOf('strokeColor') > -1) {
+                kv = 'strokeColor=' + color
+            }
+            return kv
+        }).join(';')
+        if (s.indexOf('strokeColor') == -1) {
+            s = s + ';strokeColor=' + color
+        }
+        cell.style = s
+        if (!nofresh) {
+            this.graph.refresh(cell)
+        }
     }
-
-
-
 }
 
 /**
@@ -1276,7 +1320,8 @@ window.graphAction = {
                     Object.keys(window.switchbelongsector).map(k => {
                         let c = window.parkequip[k.toLowerCase()]
                         if (c) {
-                            window.graph.model.setVisible(c, 1)
+                            c.setVisible(1)
+                            window.graph.refresh(c)
                             window.graph.view.getState(c, new mxCellState(graph, c, 'cursor=pointer')).setCursor('pointer')
                         }
                     })
@@ -1504,7 +1549,8 @@ window.graphAction = {
                 //在区故解时显示全部区段
                 Object.keys(window.switchbelongsector).map(k => {
                     let c = window.parkequip[k.toLowerCase()]
-                    window.graph.model.setVisible(c, 0)
+                    c.setVisible(0)
+                    window.graph.refresh(c)
                 })
 
                 this.clickPath.push({
@@ -1659,30 +1705,31 @@ window.set_global_state = state => {
     if (['DATA_SDI', 'DATA_SDCI'].includes(state['data_type'])) {
 
         window.globalupdata = true
-        model.beginUpdate()
+        model.beginUpdate();
         state.data.map((i, index) => {
             i.name = i.name.toUpperCase()
             switch (i.type) {
                 case 1:
-                    controlgraph.setTurnoutStatus(i.name, i)
+                    controlgraph.setTurnoutStatus(i.name, i, true)
                     break
                 case 2:
-                    controlgraph.setSectorStatus(i.name, i)
+                    controlgraph.setSectorStatus(i.name, i, true)
                     break
                 case 3:
                 case 4:
                 case 5:
-                    controlgraph.setSignalStatus(i.name, i)
+                    controlgraph.setSignalStatus(i.name, i, true)
                     break
                 case 6:
-                    controlgraph.setLightStatus(i.name, i)
+                    controlgraph.setLightStatus(i.name, i, true)
                     break
                 case 8:
                     controlgraph.setAlarmStatus(i)
                     break
             }
         })
-        model.endUpdate()
+        controlgraph.graph.refresh()
+        model.endUpdate();
         window.globalupdata = false
     }
     //处理故障
@@ -1776,11 +1823,11 @@ window.set_global_state = state => {
         console.log(`${et.name}${equip.equipstatus.name}${eti.name}`)
 
 
-        alarmwarninglistadd(et.name + equip.equipstatus.name + eti.name)
-
-
-
-    }
+         alarmwarninglistadd(et.name + equip.equipstatus.name + eti.name)
+    
+    
+    
+        }
     //处理状态
     if (['DATA_RSR'].includes(state['data_type'])) {
         /*
@@ -1875,7 +1922,7 @@ window.set_globaltrain_state = trainstate => {
     let model = controlgraph.graph.getModel()
     model.beginUpdate();
     trainstate.map((i, index) => {
-        controlgraph.setTrainStatus(trainstate, i, index)
+        controlgraph.setTrainStatus(trainstate, i, true, index)
     })
     model.endUpdate();
 }
@@ -2122,7 +2169,7 @@ mxUtils.getAll([bundle, STYLE_PATH + '/default.xml', defualtxmldoc], function (x
             cell.setAttribute('label', cell.getAttribute('belongsector').toUpperCase())
             window.parkequip[cell.getAttribute('belongsector')] = cell
             //默认隐藏
-            window.graph.model.setVisible(cell, 0)
+            cell.setVisible(0)
         }
 
         //给带有name属性的cell添加手势
@@ -2134,7 +2181,7 @@ mxUtils.getAll([bundle, STYLE_PATH + '/default.xml', defualtxmldoc], function (x
         }
         //处理所有edge
         if (cell.edge && cell.target) {
-            window.graph.model.setVisible(cell, 0)
+            cell.setVisible(0)
         }
     }
 
@@ -2162,24 +2209,24 @@ mxUtils.getAll([bundle, STYLE_PATH + '/default.xml', defualtxmldoc], function (x
                     //把点击按钮和部件发送给graphAction处理
                     let uindex = equipcellindex[evt.sourceState.cell.id] ? equipcellindex[evt.sourceState.cell.id] : equipcellindex[getEquipCell(evt.sourceState.cell).id]
                     if (evt.sourceState.cell.value.getAttribute) {
-                        if (evt.sourceState.cell.value.getAttribute('name') == 'fork') {
+                    if (evt.sourceState.cell.value.getAttribute('name') == 'fork') {
 
-                            getEquipCell(evt.sourceState.cell).getSubCell('button').map(l => {
-                                if (l.value.getAttribute('type').toUpperCase() == evt.sourceState.cell.value.getAttribute('type').toUpperCase()) {
-                                    uindex = equipcellindex[l.id]
-                                }
-                            })
+                        getEquipCell(evt.sourceState.cell).getSubCell('button').map(l => {
+                            if (l.value.getAttribute('type').toUpperCase() == evt.sourceState.cell.value.getAttribute('type').toUpperCase()) {
+                                uindex = equipcellindex[l.id]
+                            }
+                        })
 
-                        }
-
-                        if (evt.sourceState.cell.value.getAttribute('name') == 'boundary') {
-                            getEquipCell(evt.sourceState.cell).getSubCell('light').map(l => {
-                                if (l.value.getAttribute('type').toUpperCase() == evt.sourceState.cell.value.getAttribute('type').toUpperCase()) {
-                                    uindex = equipcellindex[l.id]
-                                }
-                            })
-                        }
                     }
+
+                    if (evt.sourceState.cell.value.getAttribute('name') == 'boundary') {
+                        getEquipCell(evt.sourceState.cell).getSubCell('light').map(l => {
+                            if (l.value.getAttribute('type').toUpperCase() == evt.sourceState.cell.value.getAttribute('type').toUpperCase()) {
+                                uindex = equipcellindex[l.id]
+                            }
+                        })
+                    }
+                }
 
                     window.graphAction.buttonClick({
                         cell: getEquipCell(evt.sourceState.cell),
@@ -2816,7 +2863,7 @@ $(document).ready(function () {
         });
     });
 
-    $('#firnode').on('mouseover', x => {
+        $('#firnode').on('mouseover', x => {
         $('#alarmwarninglist').show()
     })
     $('#firnode').on('mouseout', x => {
