@@ -36,11 +36,16 @@
 	<script type="text/javascript" src="js/Tdrag.js"></script>
 	<script type="text/javascript" src="js/pop.min.js"></script>
 	<script type="text/javascript" src="js/context.js"></script>
+	<script type="text/javascript" src="js/moment.min.js"></script>
 
 
 </head>
 
 <body>
+	<div class="alarmplane"
+		style="overflow:auto; line-height: 20px; font-size: 14px; font-weight: bold; height:102px; z-index:3; width:283px; position:absolute; left:0;top:0;background:#e03030;">
+		<div></div>
+	</div>
 
 	<div class="shunttrainx"></div>
 	<div class="shunttrain">
@@ -147,20 +152,20 @@
 		<div class="covergraph"></div>
 		<!-- 固定窗口 -->
 
-		<!-- 左上角显示区域 -->
-		<!-- <div style="overflow-y:auto; line-height: 20px; font-size: 14px; font-weight: bold; height:102px; z-index: 2; width:283px; position:absolute; left:0;top:0;background:red;">
-			<p way-repeat="alertlist" style="margin:0;padding:0; ">
-				<span way-data="time"></span><span way-data="content"></span>
-			</p>
-		</div> -->
+
+
 
 
 		<!-- 底部显示区域 -->
 		<div
-			style="overflow:hidden; display: flex;justify-content: space-between; line-height: 20px; font-size: 14px; font-weight: bold; height:16px; z-index: 2; width:100%; position:absolute; left:0;bottom:0;background:#eee;">
+			style=" display: flex;justify-content: space-between; line-height: 20px; font-size: 14px; font-weight: bold; height:16px; z-index: 4; width:100%; position:absolute; left:0;bottom:0;background:#eee;">
 			<div style="background:#ccc; padding: 0 10px;" id="signalname"> </div>
 			<div style=""> </div>
-			<div style="background:#ddd;" id="firnode"></div>
+			<div style="background:#ddd; position:relative; min-width: 10px" id="firnode">
+				<span></span>
+				<div style="display:none; position:absolute;left:0;bottom:16px;background:white;" id="alarmwarninglist">
+				</div>
+			</div>
 			<div style="background:#ddd;" id="countingdown"></div>
 		</div>
 
