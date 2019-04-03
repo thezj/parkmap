@@ -1114,6 +1114,10 @@ window.graphAction = {
 
     //按钮点击处理
     buttonClick(equip, button, e) {
+        //通信中断后不可操作
+        if(window.blackout){
+            return
+        }
 
         //空闲时
         if (this.status == 0) {
@@ -1983,24 +1987,7 @@ mxUtils.getAll([bundle, STYLE_PATH + '/default.xml', defualtxmldoc], function (x
     window.graph.setCellsEditable(false)
 
 
-    //根据当前cell的信息觉得是否可以拖动
-    let originmovecell = mxGraph.prototype.moveCells
-    window.graph.moveCells = function () {
-        if (arguments[0][0].getAttribute('movable') == 'true') {
-            return originmovecell.apply(this, arguments)
-        } else {
-            return false
-        }
-    }
-
-    let originPreviewShape = mxGraphHandler.prototype.updatePreviewShape
-    mxGraphHandler.prototype.updatePreviewShape = function () {
-
-        if (this.cell && this.cell.getAttribute('movable') == 'true') {
-            return originPreviewShape.apply(this, arguments)
-        }
-        return false
-    }
+    
 
 
 
@@ -2861,4 +2848,23 @@ window.alarmwarninglistadd = s => {
     $('#alarmwarninglist').append(`<p>${s}</p>`)
     $('#firnode span').html(s)
     document.querySelector('#alarmwarninglist').scrollTop = 10000
+}
+
+window.blackout = ()=>{
+    window.blackout = true
+    $('head').append($(`<style id='blackoutgrays'>
+    .geDiagramContainer {
+        filter: grayscale(100%);
+        -webkit-filter: grayscale(100%);
+        -moz-filter: grayscale(100%);
+        -ms-filter: grayscale(100%);
+        -o-filter: grayscale(100%);
+        filter: progid:DXImageTransform.Microsoft.BasicImage(grayscale=1);
+        -webkit-filter: grayscale(1)
+    }
+    </style>`))
+}
+window.blackin = ()=>{
+    window.blackout = false
+    $('#blackoutgrays').remove()
 }

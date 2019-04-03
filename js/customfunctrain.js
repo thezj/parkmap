@@ -1364,27 +1364,7 @@ mxUtils.getAll([bundle, STYLE_PATH + '/default.xml', defualtxmldoc], function (x
     window.graph.setCellsSelectable(false)
     // window.graph.setCellsMovable(false)
     window.graph.setCellsEditable(false)
-
-
-    //根据当前cell的信息觉得是否可以拖动
-    let originmovecell = mxGraph.prototype.moveCells
-    window.graph.moveCells = function () {
-        if (arguments[0][0].getAttribute('movable') == 'true') {
-            return originmovecell.apply(this, arguments)
-        } else {
-            return false
-        }
-    }
-
-    let originPreviewShape = mxGraphHandler.prototype.updatePreviewShape
-    mxGraphHandler.prototype.updatePreviewShape = function () {
-
-        if (this.cell && this.cell.getAttribute('movable') == 'true') {
-            return originPreviewShape.apply(this, arguments)
-        }
-        return false
-    }
-
+   
 
 
     for (let i in window.graph.getModel().cells) {

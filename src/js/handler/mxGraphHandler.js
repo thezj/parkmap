@@ -363,9 +363,10 @@ mxGraphHandler.prototype.consumeMouseEvent = function (evtName, me) {
 mxGraphHandler.prototype.mouseDown = function (sender, me) {
 	//如果鼠标按下时当前cell不是可移动的则返回
 
-	if (!(this.getInitialCellForEvent(me) && this.getInitialCellForEvent(me).value.getAttribute('istrain') == 'true')) {
+	if (!(this.getInitialCellForEvent(me) && this.getInitialCellForEvent(me).getAttribute('istrain') == 'true')) {
 		return
 	}
+	this.currenttrain = me.evt.target.id
 	if (!me.isConsumed() && this.isEnabled() && this.graph.isEnabled() &&
 		me.getState() != null && !mxEvent.isMultiTouchEvent(me.getEvent())) {
 		var cell = this.getInitialCellForEvent(me);
@@ -746,7 +747,7 @@ mxGraphHandler.prototype.mouseMove = function (sender, me) {
 			if (state != null && highlight) {
 				//如果targetcell是road则高亮提示
 				if (this.target.getAttribute('name') == 'road') {
-				
+
 					this.highlight.highlight(state);
 				}
 			} else {
@@ -849,12 +850,32 @@ mxGraphHandler.prototype.mouseUp = function (sender, me) {
 					}
 
 
-					
+
 					//如果目标cell是一个股道时才能移动
 					if (this.target && this.target.getAttribute('type') && this.target.getAttribute('type') == "wc") {
 						//移动到股道中心位置
 						let g = new graphx()
-						console.log(this.cells[0],this.target)
+					
+
+						//判断是否是本来位置
+						let isoriginal,existtrain,currenttrain
+						deposittrainstate.map(i => {
+							if(i.name == this.currenttrain.split('train')[1]){
+								currenttrain = i
+								if(i.position.toUpperCase() == this.target.getAttribute('uid').toUpperCase()){
+									isoriginal = true
+								}
+							}
+						
+							if(i.position.toUpperCase() == this.target.getAttribute('uid')){
+								existtrain = i
+							}
+						})
+
+						if(!isoriginal){
+							console.log(currenttrain,existtrain, this.target.getAttribute('uid'))
+						}
+
 						// this.target = window.graph.model.root
 						// this.moveCells(this.cells, dx, dy, false, this.target, me.getEvent());
 					}
