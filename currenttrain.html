@@ -1,0 +1,83 @@
+<!--[if IE]><meta http-equiv="X-UA-Compatible" content="IE=5,IE=9" ><![endif]-->
+<!DOCTYPE html>
+<html>
+
+<head>
+	<title>Grapheditor</title>
+	<meta http-equiv="Content-Type" content="text/html; charset=utf-8">
+	<meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+
+	<link rel="stylesheet" type="text/css" href="styles/grapheditor.css">
+	<script type="text/javascript" src="js/lodash.min.js"></script>
+	<script type="text/javascript" src="js/underscore.json.js"></script>
+	<script type="text/javascript" src="js/Init.js"></script>
+	<script type="text/javascript" src="deflate/pako.min.js"></script>
+	<script type="text/javascript" src="deflate/base64.js"></script>
+	<script type="text/javascript" src="jscolor/jscolor.js"></script>
+	<script type="text/javascript" src="sanitizer/sanitizer.min.js"></script>
+	<script type="text/javascript" src="src/js/mxClient.js"></script>
+	<script type="text/javascript" src="js/EditorUi.js"></script>
+	<script type="text/javascript" src="js/Editor.js"></script>
+	<script type="text/javascript" src="js/Sidebar.js"></script>
+	<script type="text/javascript" src="js/Graph.js"></script>
+	<script type="text/javascript" src="js/Format.js"></script>
+	<script type="text/javascript" src="js/Shapes.js"></script>
+	<script type="text/javascript" src="js/Actions.js"></script>
+	<script type="text/javascript" src="js/Menus.js"></script>
+	<script type="text/javascript" src="js/Toolbar.js"></script>
+	<script type="text/javascript" src="js/Dialogs.js"></script>
+	<script type="text/javascript" src="js/jquery-latest.min.js"></script>
+	<script type="text/javascript" src="js/jquery.keyboard.js"></script>
+	<script type="text/javascript" src="js/jquery-ui.min.js"></script>
+	<script type="text/javascript" src="js/jquery.mousewheel.js"></script>
+	<script type="text/javascript" src="js/jquery.keyboard.extension-typing.js"></script>
+	<script type="text/javascript" src="js/vue.js"></script>
+	<script type="text/javascript" src="js/eleindex.js"></script>
+	<script type="text/javascript" src="js/Tdrag.js"></script>
+	<script type="text/javascript" src="js/pop.min.js"></script>
+	<script type="text/javascript" src="js/context.js"></script>
+	<script type="text/javascript" src="js/moment.min.js"></script>
+
+
+</head>
+
+<body>
+
+
+
+	<div class="graphbody" style="height:100%; width:100%; position:absolute; overflow: hidden;z-index: 2;">
+		<div class="covergraph"></div>
+
+	</div>
+
+
+</body>
+
+<script type="text/javascript" src="js/customfunctrain.js"></script>
+<script>
+	/*
+	 * 页面加载完成通知后端
+	 */
+	function document_load_ready(key) {
+		var def = $.Deferred();
+		if (window.cefQuery) {
+			window.cefQuery({
+				request: JSON.stringify({
+					cmd: "load_finish"
+				}),
+				persistent: false,
+				onSuccess: function (response) {
+					def.resolve(response)
+				},
+				onFailure: function (error_code, error_message) {
+					def.reject(error_message)
+				}
+			})
+		} else {
+			def.reject('it in not in shell env')
+		}
+		return def
+	}
+</script>
+
+</html>

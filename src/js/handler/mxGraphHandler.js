@@ -362,7 +362,8 @@ mxGraphHandler.prototype.consumeMouseEvent = function (evtName, me) {
  */
 mxGraphHandler.prototype.mouseDown = function (sender, me) {
 	//如果鼠标按下时当前cell不是可移动的则返回
-	if (!(this.getInitialCellForEvent(me) && this.getInitialCellForEvent(me).getAttribute('movable'))) {
+
+	if (!(this.getInitialCellForEvent(me) && this.getInitialCellForEvent(me).value.getAttribute('istrain') == 'true')) {
 		return
 	}
 	if (!me.isConsumed() && this.isEnabled() && this.graph.isEnabled() &&
@@ -853,7 +854,7 @@ mxGraphHandler.prototype.mouseUp = function (sender, me) {
 					if (this.target && this.target.getAttribute('type') && this.target.getAttribute('type') == "wc") {
 						//移动到股道中心位置
 						let g = new graphx()
-						g.movecelltocenter(this.cells[0], this.target.getSubCell('road')[0])
+						console.log(this.cells[0],this.target)
 						// this.target = window.graph.model.root
 						// this.moveCells(this.cells, dx, dy, false, this.target, me.getEvent());
 					}

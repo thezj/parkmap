@@ -48,7 +48,30 @@ display: none;
 	font-size: 16px;
 	align-items: center;
 	justify-content: center;
+	position: relative;
+	height: 20px;
+	margin-right: 16px;
+}
 
+.trainbk::after{
+	content: ' ';
+    display: block;
+    right: -18px;
+    top: -2px;
+    height: 24px;
+    width: 16px;
+    position: absolute;
+    background: url(../images/trainhead.png);
+    background-size: auto 100%;
+}
+.trainbkleft{
+	margin-right: auto;
+	margin-left: 16px;
+}
+.trainbkleft::after{
+	transform: rotate(180deg);
+	right: auto;
+	left:-18px;
 }
 
 #graphactionbtn button:focus {
