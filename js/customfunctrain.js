@@ -20,7 +20,7 @@ class graphx {
 
     //生成一个新的div容器
     generatetrain(id, CB) {
-        let value = parkequip['TRAIN'].cloneValue()
+        let value = parkequip[2].cloneValue()
         value.setAttribute('istrain', 'true')
         let idiv = graph.insertVertex(graph.model.cells[1], null, value, 0, 0, 220, 30, "text;html=1;strokeColor=none;fillColor=none;align=center;verticalAlign=middle;whiteSpace=wrap;rounded=0;fontColor=#FFFFFF;");
         this.setLabelText(idiv, `<div  class='trainvessel trainvesseltrain' id="${id}"></div>`)
@@ -67,7 +67,7 @@ class graphx {
 
 
         graph.translateCell(target, GX - target.geometry.x - target.geometry.width / 2, GY - target.geometry.y - target.geometry.height - 7)
-     
+
     }
 
 
@@ -79,10 +79,10 @@ class graphx {
         let CB = () => {
             //生成列车
             let train
-            if (status.direction) {
-                train = $(`<div class='trainbk' id='train${status.name}'>${status.name}</div>`)
-            } else {
-                train = $(`<div class='trainbk trainbkleft' id='train${status.name}'>${status.name}</div>`)
+            if (status.type == 1) {
+                train = $(`<div class='trainbk ctrainbk traintype${status.status}' id='train${status.name}'>${status.name}</div>`)
+            } else if (status.type == 2) {
+                train = $(`<div class='trainbk fctrainbk flattraintype${status.status}' id='train${status.name}'>${status.name}</div>`)
             }
             //目标位置是否有车
             let hasTrain = alls.find((x, xi) => {
@@ -103,15 +103,17 @@ class graphx {
                 } else {
                     doms.find('.trainbk').after(train)
                 }
-
-
                 parkequip['V' + hasTrain.name].value.setAttribute('label', doms.get(0).outerHTML)
+                this.graph.orderCells(0, [parkequip['V' + hasTrain.name]])
             } else {
                 let doms = $('#V' + vesselid).append(train)
                 parkequip['V' + vesselid].value.setAttribute('label', doms.get(0).outerHTML)
                 //添加列车到容器
                 this.imovecell('V' + vesselid, status.position.toUpperCase())
+                this.graph.orderCells(0, [parkequip['V' + vesselid]])
             }
+
+
         }
 
 
@@ -1364,7 +1366,7 @@ mxUtils.getAll([bundle, STYLE_PATH + '/default.xml', defualtxmldoc], function (x
     window.graph.setCellsSelectable(false)
     // window.graph.setCellsMovable(false)
     window.graph.setCellsEditable(false)
-   
+
 
 
     for (let i in window.graph.getModel().cells) {
@@ -1589,4 +1591,51 @@ mxUtils.getAll([bundle, STYLE_PATH + '/default.xml', defualtxmldoc], function (x
 }, function () {
     document.body.innerHTML =
         '<center style="margin-top:10%;">Error loading resource files. Please check browser console.</center>';
+});
+//火车可移动
+window.istrainmovable = true
+
+//右键菜单\
+var kyoPopupMenu = {};
+kyoPopupMenu = (function () {
+    return {
+        sys: function (trainname) {
+            console.log('点击列车id',trainname)
+            $('.popup_menu').remove();
+            popupMenuApp = $(`<div class="popup_menu app-menu"><ul>
+            <li><a menu="menu1">menu1</a></li>
+            <li><a menu="menu2">menu1</a></li>
+            <li><a menu="menu3">menu1</a></li>
+            </ul></div>`)
+                .find('a').attr('href', 'javascript:;')
+                .end().appendTo('body');
+            //绑定事件
+            $('.app-menu a[menu="menu1"]').on('click', function () {
+            });
+            $('.app-menu a[menu="menu2"]').on('click', function () {
+            });
+            $('.app-menu a[menu="menu3"]').on('click', function () {
+            });
+            return popupMenuApp;
+        }
+    }
+})();
+//取消右键
+$('html').on('contextmenu', function () {
+    return false;
+}).click(function () {
+    $('.popup_menu').hide();
+});
+//桌面点击右击
+$('html').on('contextmenu', function (e) {
+    if (e.target.id.indexOf('train') > -1) {
+        var popupmenu = kyoPopupMenu.sys(e.target.id.split('train')[1]);
+        l = ($(document).width() - e.clientX) < popupmenu.width() ? (e.clientX - popupmenu.width()) : e.clientX;
+        t = ($(document).height() - e.clientY) < popupmenu.height() ? (e.clientY - popupmenu.height()) : e.clientY;
+        popupmenu.css({
+            left: l,
+            top: t
+        }).show();
+    }
+    return false;
 });

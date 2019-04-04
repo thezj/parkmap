@@ -363,9 +363,10 @@ mxGraphHandler.prototype.consumeMouseEvent = function (evtName, me) {
 mxGraphHandler.prototype.mouseDown = function (sender, me) {
 	//如果鼠标按下时当前cell不是可移动的则返回
 
-	if (!(this.getInitialCellForEvent(me) && this.getInitialCellForEvent(me).getAttribute('istrain') == 'true')) {
+	if (!(this.getInitialCellForEvent(me) && this.getInitialCellForEvent(me).getAttribute('istrain') == 'true') || !window.istrainmovable) {
 		return
 	}
+
 	this.currenttrain = me.evt.target.id
 	if (!me.isConsumed() && this.isEnabled() && this.graph.isEnabled() &&
 		me.getState() != null && !mxEvent.isMultiTouchEvent(me.getEvent())) {
@@ -711,7 +712,7 @@ mxGraphHandler.prototype.mouseMove = function (sender, me) {
 
 
 			//如果目标位置cell时road 则把target设置为根节点
-			if (target && target.getSubCell('road')[0]) {
+			if (target && target.getSubCell('road') && target.getSubCell('road')[0]) {
 				target = target.getSubCell('road')[0]
 			}
 
@@ -855,26 +856,39 @@ mxGraphHandler.prototype.mouseUp = function (sender, me) {
 					if (this.target && this.target.getAttribute('type') && this.target.getAttribute('type') == "wc") {
 						//移动到股道中心位置
 						let g = new graphx()
-					
 
+						let targetposition = this.target.getAttribute('uid').toLowerCase()
 						//判断是否是本来位置
-						let isoriginal,existtrain,currenttrain
+						let isoriginal, existtrain = 0,
+							icurrenttrain
 						deposittrainstate.map(i => {
-							if(i.name == this.currenttrain.split('train')[1]){
-								currenttrain = i
-								if(i.position.toUpperCase() == this.target.getAttribute('uid').toUpperCase()){
+							if (i.name == this.currenttrain.split('train')[1]) {
+								icurrenttrain = i
+								if (i.position == targetposition) {
 									isoriginal = true
 								}
 							}
-						
-							if(i.position.toUpperCase() == this.target.getAttribute('uid')){
-								existtrain = i
+
+							if (i.position == targetposition) {
+								existtrain++
 							}
 						})
 
-						if(!isoriginal){
-							console.log(currenttrain,existtrain, this.target.getAttribute('uid'))
+						if (!isoriginal && existtrain < 2) {
+							console.log(icurrenttrain, targetposition)
+							//刷新全局车辆状态
+
+							deposittrainstate = deposittrainstate.map(i => {
+								if (i.name == icurrenttrain.name) {
+									i.position = targetposition
+								}
+								return i
+							})
+
+							set_globaltrain_state(deposittrainstate)
+
 						}
+
 
 						// this.target = window.graph.model.root
 						// this.moveCells(this.cells, dx, dy, false, this.target, me.getEvent());

@@ -2840,6 +2840,8 @@ $(document).ready(function () {
         $('#alarmwarninglist').show()
     })
 });
+//火车不可移动
+window.istrainmovable = false
 
 window.alarmwarninglistadd = s => {
     if ($('#alarmwarninglist p').length < 10) {} else {
