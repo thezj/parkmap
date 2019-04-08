@@ -1600,8 +1600,9 @@ var kyoPopupMenu = {};
 kyoPopupMenu = (function () {
     return {
         sys: function (trainname) {
-            console.log('点击列车id',trainname)
             $('.popup_menu').remove();
+            console.log('点击列车id',trainname)
+            //根据当前点击列车属性生成菜单
             popupMenuApp = $(`<div class="popup_menu app-menu"><ul>
             <li><a menu="menu1">menu1</a></li>
             <li><a menu="menu2">menu1</a></li>
@@ -1616,6 +1617,7 @@ kyoPopupMenu = (function () {
             });
             $('.app-menu a[menu="menu3"]').on('click', function () {
             });
+
             return popupMenuApp;
         }
     }

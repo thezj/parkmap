@@ -1115,7 +1115,7 @@ window.graphAction = {
     //按钮点击处理
     buttonClick(equip, button, e) {
         //通信中断后不可操作
-        if(window.blackout){
+        if (window.sysblackout) {
             return
         }
 
@@ -1888,6 +1888,31 @@ window.set_global_state = state => {
         }
 
     }
+
+    //通信状态
+    if (['DATA_NETINFO'].includes(state['data_type'])) {
+
+
+        if (state.data.type) {
+            if (state.data.status) {
+                blackout()
+                controlgraph.setAlarmStatus({name:'连锁通信中断'})
+            } else {
+                blackin()
+                controlgraph.setAlarmStatus({name:'连锁通信恢复'})
+            }
+        } else {
+            if (state.data.status) {
+                blackout()
+                controlgraph.setAlarmStatus({name:'前置机通信中断'})
+            } else {
+                blackin()
+                controlgraph.setAlarmStatus({name:'前置机通信恢复'})
+            }
+        }
+
+    }
+
 }
 
 //设置现车状态
@@ -1987,7 +2012,7 @@ mxUtils.getAll([bundle, STYLE_PATH + '/default.xml', defualtxmldoc], function (x
     window.graph.setCellsEditable(false)
 
 
-    
+
 
 
 
@@ -2852,8 +2877,8 @@ window.alarmwarninglistadd = s => {
     document.querySelector('#alarmwarninglist').scrollTop = 10000
 }
 
-window.blackout = ()=>{
-    window.blackout = true
+window.blackout = () => {
+    window.sysblackout = true
     $('head').append($(`<style id='blackoutgrays'>
     .geDiagramContainer {
         filter: grayscale(100%);
@@ -2865,8 +2890,10 @@ window.blackout = ()=>{
         -webkit-filter: grayscale(1)
     }
     </style>`))
+
+
 }
-window.blackin = ()=>{
-    window.blackout = false
+window.blackin = () => {
+    window.sysblackout = false
     $('#blackoutgrays').remove()
 }
