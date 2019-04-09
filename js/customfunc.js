@@ -1954,7 +1954,11 @@ let loadmap = mapname => {
     //战场图的xml
     if (location.href.split('?').includes('test')) {
         window.defualtxmldoc = `/${mapname}/station2.xml`
-    } else {
+    } else if (location.href.split('?').includes('long')) { 
+
+        window.defualtxmldoc = `/${mapname}/stationlong.xml`
+
+    }else{
         window.defualtxmldoc = `/${mapname}/station.xml`
 
     }
