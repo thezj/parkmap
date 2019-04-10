@@ -1894,20 +1894,33 @@ window.set_global_state = state => {
 
 
         if (state.data.type) {
-            if (state.data.status) {
+            if (state.data.status == 1) {
                 blackout()
                 controlgraph.setAlarmStatus({name:'连锁通信中断'})
-            } else {
+            } else  if (state.data.status == 0) {
                 blackin()
                 controlgraph.setAlarmStatus({name:'连锁通信恢复'})
+            }else  if (state.data.status == 2) {
+                blackout()
+                controlgraph.setAlarmStatus({name:'连锁机器故障'})
+            }else  if (state.data.status == 3) {
+                blackout()
+                controlgraph.setAlarmStatus({name:'连锁通信数据错误'})
             }
         } else {
-            if (state.data.status) {
+
+            if (state.data.status == 1) {
                 blackout()
                 controlgraph.setAlarmStatus({name:'前置机通信中断'})
-            } else {
+            } else  if (state.data.status == 0) {
                 blackin()
                 controlgraph.setAlarmStatus({name:'前置机通信恢复'})
+            }else  if (state.data.status == 2) {
+                blackout()
+                controlgraph.setAlarmStatus({name:'前置机机器故障'})
+            }else  if (state.data.status == 3) {
+                blackout()
+                controlgraph.setAlarmStatus({name:'前置机通信数据错误'})
             }
         }
 
