@@ -2120,12 +2120,18 @@ mxUtils.getAll([bundle, STYLE_PATH + '/default.xml', defualtxmldoc], function (x
 
         //如果发现uid属性则加入全局存放
         if (cell.getAttribute('uid')) {
+           
+       
+
+            cell.getSubCell('label')[0].setAttribute('uid', uid)
+
 
             //把road放置到最上面，保证添加占线图标后图标在road的label上能显示到最前
             if (cell.getSubCell('road')) {
                 graph.orderCells(0, [cell.getSubCell('road')[0]])
             }
             let uid = cell.getAttribute('uid').toUpperCase()
+            uid =  uid.replace('/','_')
             cell.setAttribute('uid', uid)
             window.parkequip[cell.getAttribute('uid')] = cell
             //给所有部件的label添加文字
