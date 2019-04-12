@@ -734,9 +734,9 @@ class graphx {
 
         }
 
-        //信号机方框显示 0,1,2,3
+        //信号机方框显示 
 
-        if (status.da_start == 1 && status.da_start == 0) {
+        if (status.da_start == 1 && status.signal_end == 0) {
             boundary.map(i => {
                 if (i.value.getAttribute('name') == 'boundary' && (i.value.getAttribute('type') == 'da' || !i.value.getAttribute('type'))) {
                     window.graph.model.setVisible(i, 1)
@@ -744,7 +744,7 @@ class graphx {
                 }
             })
         }
-        if (status.da_start == 0 && status.da_start == 1) {
+        if (status.da_start == 0 && status.signal_end == 1) {
             boundary.map(i => {
                 if (i.value.getAttribute('name') == 'boundary' && (i.value.getAttribute('type') == 'da' || !i.value.getAttribute('type'))) {
                     window.graph.model.setVisible(i, 1)
@@ -752,7 +752,7 @@ class graphx {
                 }
             })
         }
-        if (status.da_start == 1 && status.da_start == 1) {
+        if (status.da_start == 1 && status.signal_end == 1) {
             boundary.map(i => {
                 if (i.value.getAttribute('name') == 'boundary' && (i.value.getAttribute('type') == 'da' || !i.value.getAttribute('type'))) {
                     window.graph.model.setVisible(i, 1)
@@ -938,7 +938,9 @@ class graphx {
 
     //换label的文字html
     setLabelText(cell, code) {
-        cell.value.setAttribute('label', code)
+        let oldvalue = cell.cloneValue()
+        oldvalue.setAttribute('label', code)
+        graph.model.setValue(cell,oldvalue)
     }
 
 
@@ -1125,14 +1127,10 @@ window.graphAction = {
 
             //始端列车按钮（LA）
             if (button && button.type && button.type == 'la') {
-                console.log('点击始端列车按钮:')
-
                 if (!button.uindex) {
                     return
                 }
-
-
-                if (equip.cell.equipstatus.signal_square == 2) {
+                if (equip.cell.equipstatus.da_start == 1,equip.cell.equipstatus.signal_end == 1) {
                     window.cefQuery({
                         request: JSON.stringify({
                             cmd: "commit_action",
@@ -1154,11 +1152,7 @@ window.graphAction = {
                     })
                     return
                 }
-
-
                 document.querySelector('#signalname').innerHTML = ('始列' + equip.cell.equipstatus.name)
-
-
                 this.clickPath.push({
                     index: Number(button.uindex),
                     name: equip.cell.equipstatus.name
@@ -1175,7 +1169,7 @@ window.graphAction = {
                     return
                 }
 
-                if (equip.cell.equipstatus.signal_square == 1) {
+                if (equip.cell.equipstatus.da_start == 1 && equip.cell.equipstatus.signal_end == 0) {
                     window.cefQuery({
                         request: JSON.stringify({
                             cmd: "commit_action",
@@ -1316,7 +1310,6 @@ window.graphAction = {
                 ikeyboard.reveal().insertText('')
                 this.status = 14
                 window.graphActionCallback = i => {
-                    console.log('点击引导总锁按钮:', 'BTN')
                     this.clickPath.push(211)
                     this.commitAction()
                     window.graphActionCallback = null
@@ -1968,12 +1961,9 @@ let loadmap = mapname => {
     if (location.href.split('?').includes('test')) {
         window.defualtxmldoc = `/${mapname}/station2.xml`
     } else if (location.href.split('?').includes('long')) { 
-
         window.defualtxmldoc = `/${mapname}/stationlong.xml`
-
     }else{
         window.defualtxmldoc = `/${mapname}/station.xml`
-
     }
     //按钮表
     $.ajax({
@@ -1986,6 +1976,8 @@ let loadmap = mapname => {
     })
 
 }
+
+
 loadmap('gaodalu')
 
 /**
@@ -2123,20 +2115,20 @@ mxUtils.getAll([bundle, STYLE_PATH + '/default.xml', defualtxmldoc], function (x
            
        
 
-            cell.getSubCell('label')[0].setAttribute('uid', uid)
 
 
             //把road放置到最上面，保证添加占线图标后图标在road的label上能显示到最前
             if (cell.getSubCell('road')) {
                 graph.orderCells(0, [cell.getSubCell('road')[0]])
             }
+            let ouid = cell.getAttribute('uid').toUpperCase()
             let uid = cell.getAttribute('uid').toUpperCase()
             uid =  uid.replace('/','_')
             cell.setAttribute('uid', uid)
             window.parkequip[cell.getAttribute('uid')] = cell
             //给所有部件的label添加文字
             if (cell.getSubCell('label') && cell.getSubCell('label')[0]) {
-                cell.getSubCell('label')[0].setAttribute('label', uid)
+                cell.getSubCell('label')[0].setAttribute('label', ouid)
             }
 
 
@@ -2439,12 +2431,14 @@ mxUtils.getAll([bundle, STYLE_PATH + '/default.xml', defualtxmldoc], function (x
 
 
     }
-    //占线板
+
+    //初始化占线板图标的拖拽
     mxUtils.makeDraggable(document.querySelector('#dragicons img:nth-child(1)'), window.graph, dragcallback, document.querySelector('#dragicons img:nth-child(1)').cloneNode(), -15, -15, false, false, true);
     mxUtils.makeDraggable(document.querySelector('#dragicons img:nth-child(2)'), window.graph, dragcallback, document.querySelector('#dragicons img:nth-child(2)').cloneNode(), -15, -15, false, false, true);
 
     //模拟处理现车
     setTimeout(x => {
+        return
         set_globaltrain_state([{
             type: 1, //类型,
             name: 'as1232', //名称
