@@ -940,12 +940,15 @@ class graphx {
     setLabelText(cell, code) {
         let oldvalue = cell.cloneValue()
         oldvalue.setAttribute('label', code)
-        graph.model.setValue(cell,oldvalue)
+        graph.model.setValue(cell, oldvalue)
     }
 
 
     //换cell的背景颜色
     setFillColor(cell, color) {
+        if (!cell) {
+            return
+        }
         let s = cell.style
         s += 'fillColor=' + color + ';'
         graph.model.setStyle(cell, s)
@@ -953,6 +956,9 @@ class graphx {
 
     //换cell的边框颜色
     setStrokeColor(cell, color) {
+        if (!cell) {
+            return
+        }
         let s = cell.style
         s += 'strokeColor=' + color + ';'
         graph.model.setStyle(cell, s)
@@ -1130,7 +1136,7 @@ window.graphAction = {
                 if (!button.uindex) {
                     return
                 }
-                if (equip.cell.equipstatus.da_start == 1,equip.cell.equipstatus.signal_end == 1) {
+                if (equip.cell.equipstatus.da_start == 1, equip.cell.equipstatus.signal_end == 1) {
                     window.cefQuery({
                         request: JSON.stringify({
                             cmd: "commit_action",
@@ -1889,31 +1895,47 @@ window.set_global_state = state => {
         if (state.data.type) {
             if (state.data.status == 1) {
                 blackout()
-                controlgraph.setAlarmStatus({name:'连锁通信中断'})
-            } else  if (state.data.status == 0) {
+                controlgraph.setAlarmStatus({
+                    name: '连锁通信中断'
+                })
+            } else if (state.data.status == 0) {
                 blackin()
-                controlgraph.setAlarmStatus({name:'连锁通信恢复'})
-            }else  if (state.data.status == 2) {
+                controlgraph.setAlarmStatus({
+                    name: '连锁通信恢复'
+                })
+            } else if (state.data.status == 2) {
                 blackout()
-                controlgraph.setAlarmStatus({name:'连锁机器故障'})
-            }else  if (state.data.status == 3) {
+                controlgraph.setAlarmStatus({
+                    name: '连锁机器故障'
+                })
+            } else if (state.data.status == 3) {
                 blackout()
-                controlgraph.setAlarmStatus({name:'连锁通信数据错误'})
+                controlgraph.setAlarmStatus({
+                    name: '连锁通信数据错误'
+                })
             }
         } else {
 
             if (state.data.status == 1) {
                 blackout()
-                controlgraph.setAlarmStatus({name:'前置机通信中断'})
-            } else  if (state.data.status == 0) {
+                controlgraph.setAlarmStatus({
+                    name: '前置机通信中断'
+                })
+            } else if (state.data.status == 0) {
                 blackin()
-                controlgraph.setAlarmStatus({name:'前置机通信恢复'})
-            }else  if (state.data.status == 2) {
+                controlgraph.setAlarmStatus({
+                    name: '前置机通信恢复'
+                })
+            } else if (state.data.status == 2) {
                 blackout()
-                controlgraph.setAlarmStatus({name:'前置机机器故障'})
-            }else  if (state.data.status == 3) {
+                controlgraph.setAlarmStatus({
+                    name: '前置机机器故障'
+                })
+            } else if (state.data.status == 3) {
                 blackout()
-                controlgraph.setAlarmStatus({name:'前置机通信数据错误'})
+                controlgraph.setAlarmStatus({
+                    name: '前置机通信数据错误'
+                })
             }
         }
 
@@ -1949,6 +1971,9 @@ window.parkequip = {}
 //道岔对应区段的json文件
 
 let loadmap = mapname => {
+
+
+
     $.ajax({
         url: `/${mapname}/stationswitchbelongsector.json`,
         type: "GET",
@@ -1960,9 +1985,9 @@ let loadmap = mapname => {
     //战场图的xml
     if (location.href.split('?').includes('test')) {
         window.defualtxmldoc = `/${mapname}/station2.xml`
-    } else if (location.href.split('?').includes('long')) { 
+    } else if (location.href.split('?').includes('long')) {
         window.defualtxmldoc = `/${mapname}/stationlong.xml`
-    }else{
+    } else {
         window.defualtxmldoc = `/${mapname}/station.xml`
     }
     //按钮表
@@ -2112,8 +2137,8 @@ mxUtils.getAll([bundle, STYLE_PATH + '/default.xml', defualtxmldoc], function (x
 
         //如果发现uid属性则加入全局存放
         if (cell.getAttribute('uid')) {
-           
-       
+
+
 
 
 
@@ -2123,7 +2148,7 @@ mxUtils.getAll([bundle, STYLE_PATH + '/default.xml', defualtxmldoc], function (x
             }
             let ouid = cell.getAttribute('uid').toUpperCase()
             let uid = cell.getAttribute('uid').toUpperCase()
-            uid =  uid.replace('/','_')
+            uid = uid.replace('/', '_')
             cell.setAttribute('uid', uid)
             window.parkequip[cell.getAttribute('uid')] = cell
             //给所有部件的label添加文字
