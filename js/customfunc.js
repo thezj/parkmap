@@ -482,26 +482,26 @@ class graphx {
 
         //不在graph上的dom控制
 
-        if (uid == '场引导总锁BTN') {
 
+        if (uid == bottombutton.name + 'BTN') {
             if (status.light) {
-                $($('#graphactionbtn button')[0]).css({
+                $('#parkbottombtn1').css({
                     background: "#ffff57"
                 })
             } else {
-                $($('#graphactionbtn button')[0]).attr('style', '')
+                $('#parkbottombtn1').attr('style', '')
             }
 
             return
         }
+
+
 
         let cell = this.getEquip(uid)
         if (!cell) return
         cell.equipstatus = status
         //获取零件
         let light = cell.getSubCell('light')
-
-
 
         // BYTE light : 1;               // 亮灯
         // BYTE flash : 1;               // 闪灯
@@ -1122,6 +1122,7 @@ window.graphAction = {
 
     //按钮点击处理
     buttonClick(equip, button, e) {
+        console.log('点击按钮',equip, button)
         //通信中断后不可操作
         if (window.sysblackout) {
             return
@@ -1129,6 +1130,30 @@ window.graphAction = {
 
         //空闲时
         if (this.status == 0) {
+
+            //BTN按钮
+            if (button && button.type && button.type == 'BTN') {
+                window.cefQuery({
+                    request: JSON.stringify({
+                        cmd: "commit_action",
+                        data: {
+                            clickPath: [{
+                                index: Number(button.uindex),
+                                name: equip.cell.equipstatus.name
+                            }],
+                            status: 0xAA
+                        }
+                    }),
+                    persistent: false,
+                    onSuccess: function (response) {
+                        // def.resolve(response)
+                    },
+                    onFailure: function (error_code, error_message) {
+                        // def.reject(error_message)
+                    }
+                })
+                return
+            }
 
 
             //始端列车按钮（LA）
@@ -1316,7 +1341,7 @@ window.graphAction = {
                 ikeyboard.reveal().insertText('')
                 this.status = 14
                 window.graphActionCallback = i => {
-                    this.clickPath.push(211)
+                    this.clickPath.push(bottombutton.index)
                     this.commitAction()
                     window.graphActionCallback = null
                 }
@@ -1667,6 +1692,72 @@ mxCell.prototype.getSubCell = function (name) {
 
 
 
+let has_get_plan = false
+let cur_plans = []
+
+// 需进行优化
+let getClickPath = (btns) => {
+    let clickPath = []
+    let btn_split = btns.split(" ")
+    for (let item of btn_split) {
+        let name = item.slice(0, item.length - 2)
+        let type = item.slice(-2)
+        for (let ele of equipindex) {
+            let datas = ele.split(' = ')
+            if (datas[1] == name && datas[2] == type) {
+                clickPath.push(parseInt(datas[0]))
+                break
+            }
+        }
+    }
+
+    return clickPath
+}
+
+let rpcRequest = () => {
+    rpc.rpcSendRequest("/metro_park_dispatch/get_train_out_plan", {}).then(rets => {
+        cur_plans = JSON.parse(rets)
+        let plans_internal = setTimeout(() => {
+            if (cur_plans.length) {
+                let cur_plan = cur_plans.splice(0, 1)[0]
+                let cur_plan_internal = setTimeout(() => {
+                    console.log(cur_plan)
+                    if (cur_plan['instruct'].length) {
+                        let route = cur_plan['instruct'].splice(0, 1)[0]
+                        console.log(route)
+                        let clickPath = getClickPath(route["now_press_btn"])
+                        console.log(cur_plan, route, clickPath)
+                        window.cefQuery({
+                            request: JSON.stringify({
+                                cmd: "commit_action",
+                                data: JSON.parse(JSON.stringify({
+                                    status: 0x05,
+                                    clickPath: clickPath
+                                }))
+                            }),
+                            persistent: false,
+                            onSuccess: function (response) {
+                                // def.resolve(response)
+                            },
+                            onFailure: function (error_code, error_message) {
+                                // def.reject(error_message)
+                            }
+                        })
+                    } else {
+                        // clearInterval(cur_plan_internal)
+                    }
+                }, 1000)
+
+            } else {
+                // clearInterval(plans_internal)
+                rpcRequest()
+            }
+        }, 5000)
+    })
+}
+
+
+
 //设置全局状态
 
 window.set_global_state = state => {
@@ -1941,6 +2032,12 @@ window.set_global_state = state => {
 
     }
 
+    if (!has_get_plan) {
+        rpc.setHost("http://127.0.0.1:8069", "metro_park_local1", "")
+        rpcRequest()
+        has_get_plan = true
+    }
+
 }
 
 //设置现车状态
@@ -1972,8 +2069,29 @@ window.parkequip = {}
 
 let loadmap = mapname => {
 
+    //加载图对应的底部按钮
+    $.ajax({
+        url: `../parkbottombutton/parkbottombtn.json`,
+        type: "GET",
+        dataType: "json",
+        success: function (data) {
+            let index = data[mapname][0].split(' = ')[0]
+            let name = data[mapname][0].split(' = ')[1]
+            let ty = data[mapname][0].split(' = ')[2]
 
+            window.bottombutton = {
+                index,
+                name,
+                type: ty
+            }
 
+            //设置底部btn
+            $('#parkbottombtn1').html(name)
+
+        }
+    })
+
+    //有叉区段对应道岔关系
     $.ajax({
         url: `/${mapname}/stationswitchbelongsector.json`,
         type: "GET",
@@ -1982,7 +2100,7 @@ let loadmap = mapname => {
             window.switchbelongsector = data
         }
     })
-    //战场图的xml
+    //图的xml
     if (location.href.split('?').includes('test')) {
         window.defualtxmldoc = `/${mapname}/station2.xml`
     } else if (location.href.split('?').includes('long')) {
@@ -2003,7 +2121,7 @@ let loadmap = mapname => {
 }
 
 
-loadmap('gaodalu')
+loadmap('banqiao')
 
 /**
  * 
@@ -2165,10 +2283,24 @@ mxUtils.getAll([bundle, STYLE_PATH + '/default.xml', defualtxmldoc], function (x
                 let index = s.split(' = ')[0]
                 let name = s.split(' = ')[1]
                 let ty = s.split(' = ')[2]
+
+
+                if (uid.indexOf('BTN') > -1) {
+                    uid = uid.split('BTN')[0]
+                }
+
+
                 if (name == uid) {
+
+
+                    if (cell.value.getAttribute('type') == 'BTN') {
+                        equipcellindex[cell.id] = index
+                        return
+                    }
 
                     if (cell.getSubCell('light').length == 0 && cell.getSubCell('button').length == 0) {
                         equipcellindex[cell.id] = index
+                        return
                     }
 
 
@@ -2232,8 +2364,27 @@ mxUtils.getAll([bundle, STYLE_PATH + '/default.xml', defualtxmldoc], function (x
             if (evt.sourceState) {
 
                 if (getCellUid(evt.sourceState.cell)) {
+
+
+
+
+
                     //把点击按钮和部件发送给graphAction处理
                     let uindex = equipcellindex[evt.sourceState.cell.id] ? equipcellindex[evt.sourceState.cell.id] : equipcellindex[getEquipCell(evt.sourceState.cell).id]
+
+
+                    if (getEquipCell(evt.sourceState.cell).value.getAttribute('type') == 'BTN') {
+
+                        window.graphAction.buttonClick({
+                            cell: getEquipCell(evt.sourceState.cell),
+                        }, {
+                            type: 'BTN',
+                            uindex
+                        }, evt.evt)
+
+                    }
+
+
                     if (evt.sourceState.cell.value.getAttribute) {
                         if (evt.sourceState.cell.value.getAttribute('name') == 'fork') {
 
@@ -2322,6 +2473,11 @@ mxUtils.getAll([bundle, STYLE_PATH + '/default.xml', defualtxmldoc], function (x
                         type: evt.sourceState.cell.getAttribute('type')
                     }, evt.evt)
                 }
+
+
+
+
+
             }
             mxLog.debug('mouseDown');
         },
